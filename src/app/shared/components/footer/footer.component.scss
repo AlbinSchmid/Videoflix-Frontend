@@ -1,0 +1,15 @@
+@import './../../../../styles.scss';
+
+footer {
+    @include flex-position();
+    gap: 48px;
+
+    a {
+        @include font-style($fw: 500);
+        transition: 125ms;
+
+        &:hover {
+            color: $color-blue;
+        }
+    }
+}

@@ -1,0 +1,14 @@
+@import './../../../../styles.scss';
+
+header {
+    @include flex-position($jc: space-between);
+
+    img{
+        height: 32px;
+    }
+
+    button {
+        @include font-style($fw: 600);    
+        padding: 24px;
+    }
+}

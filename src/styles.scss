@@ -1,1 +1,139 @@
-/* You can add global styles to this file, and also import other style files */
+@use '@angular/material' as mat;
+
+$color-blue: #2E3EDF;
+
+@mixin flex-position($d: flex, $jc: center, $ai: center, $fd: row) {
+    display: $d;
+    justify-content: $jc;
+    align-items: $ai;
+    flex-direction: $fd;
+}
+
+@mixin font-style($fs: 18px, $fw: 400) {
+    font-size: $fs;
+    font-weight: $fw;
+}
+
+:root {
+    @include mat.button-overrides((filled-container-color: $color-blue,
+        ));
+}
+
+html,
+body {
+    height: 100%;
+}
+
+* {
+    margin: 0;
+    box-sizing: border-box;
+    font-family: 'DM Sans', 'Helvetica Neue', sans-serif;
+    color: white;
+}
+
+section {
+    height: 100vh;
+    width: 100vw;
+}
+
+header,
+footer {
+    max-width: 1920px;
+    width: 100%;
+}
+
+a {
+    text-decoration: none;
+}
+
+input {
+    background-color: transparent;
+    border: 1px solid white;
+
+    &:focus {
+        outline: none;
+    }
+
+    &:-webkit-autofill {
+        transition: background-color 9999s ease-in-out 0s;
+        -webkit-text-fill-color: white;
+    }
+}
+
+h1,
+p,
+a {
+    text-align: center;
+}
+
+@font-face {
+    font-display: swap;
+    font-family: 'DM Sans';
+    font-style: normal;
+    font-weight: 100;
+    src: url('../public/fonts/dm-sans-v15-latin-100.woff2') format('woff2');
+}
+
+@font-face {
+    font-display: swap;
+    font-family: 'DM Sans';
+    font-style: normal;
+    font-weight: 200;
+    src: url('../public/fonts/dm-sans-v15-latin-200.woff2') format('woff2');
+}
+
+@font-face {
+    font-display: swap;
+    font-family: 'DM Sans';
+    font-style: normal;
+    font-weight: 300;
+    src: url('../public/fonts/dm-sans-v15-latin-300.woff2') format('woff2');
+}
+
+@font-face {
+    font-display: swap;
+    font-family: 'DM Sans';
+    font-style: normal;
+    font-weight: 400;
+    src: url('../public/fonts/dm-sans-v15-latin-regular.woff2') format('woff2');
+}
+
+@font-face {
+    font-display: swap;
+    font-family: 'DM Sans';
+    font-style: normal;
+    font-weight: 500;
+    src: url('../public/fonts/dm-sans-v15-latin-500.woff2') format('woff2');
+}
+
+@font-face {
+    font-display: swap;
+    font-family: 'DM Sans';
+    font-style: normal;
+    font-weight: 600;
+    src: url('../public/fonts/dm-sans-v15-latin-600.woff2') format('woff2');
+}
+
+@font-face {
+    font-display: swap;
+    font-family: 'DM Sans';
+    font-style: normal;
+    font-weight: 700;
+    src: url('../public/fonts/dm-sans-v15-latin-700.woff2') format('woff2');
+}
+
+@font-face {
+    font-display: swap;
+    font-family: 'DM Sans';
+    font-style: normal;
+    font-weight: 800;
+    src: url('../public/fonts/dm-sans-v15-latin-800.woff2') format('woff2');
+}
+
+@font-face {
+    font-display: swap;
+    font-family: 'DM Sans';
+    font-style: normal;
+    font-weight: 900;
+    src: url('../public/fonts/dm-sans-v15-latin-900.woff2') format('woff2');
+}

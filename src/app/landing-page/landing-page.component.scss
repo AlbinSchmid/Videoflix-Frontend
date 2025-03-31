@@ -1,0 +1,52 @@
+@import './../../styles.scss';
+
+section {
+    @include flex-position($jc: space-between, $fd: column, $ai: normal);
+    background: linear-gradient(180deg, #000000 -19.89%, rgba(0, 0, 0, 0.55) 40.46%, #000000 100%), url(./../../../public/img/landing-page-background.png);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    padding: 40px 96px;
+}
+
+app-header, app-footer {
+    @include flex-position();
+}
+
+.content {
+    @include flex-position($fd: column);
+    gap: 32px;
+
+    h1 {
+        @include font-style($fs: 48px, $fw: 700);
+    }
+
+    p {
+        @include font-style();
+    }
+
+    form {
+        @include flex-position();
+        gap: 16px;
+
+        input {
+            @include font-style();
+            border-radius: 40px;
+            width: 360px;
+            height: 48px;
+            gap: 10px;
+            border-radius: 40px;
+            padding: 12px 24px;
+    
+            &::placeholder {
+                @include font-style();
+                color: white;
+            }
+        }
+    
+        button {
+            @include font-style($fw: 700);
+            height: 48px;
+        }
+    }
+}
