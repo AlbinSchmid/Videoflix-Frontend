@@ -1,0 +1,64 @@
+<div class="content">
+    @if (formType === 'login') {
+    <h1>Log in</h1>
+    <form action="">
+        <input type="email" class="input-blue" placeholder="Email Address"
+            pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" required>
+        <div class="input-blue password-wrapper">
+            <input type="{{showPassword ? 'text' : 'password'}}" class="input-blue" placeholder="Password">
+            <mat-icon (click)="togglePasswordVisibility('password')"
+                fontIcon="{{ showPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
+        </div>
+        <button type="submit" mat-flat-button>Log in</button>
+    </form>
+    <a href="forgot-password">Forgot password?</a>
+    <div class="sign-up-div">
+        <p>New to Videoflix?</p>
+        <a href="registration">Sign Up now</a>
+    </div>
+    } @else if (formType === 'signup') {
+    <h1>Sign Up</h1>
+    <form action="">
+        <input type="email" class="input-blue" placeholder="Email Address"
+            pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" required>
+        <div class="input-blue password-wrapper">
+            <input type="{{showPassword ? 'text' : 'password'}}" class="input-blue" placeholder="Enter a Password">
+            <mat-icon (click)="togglePasswordVisibility('password')"
+                fontIcon="{{ showPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
+        </div>
+        <div class="input-blue password-wrapper">
+            <input type="{{showConfirmPassword ? 'text' : 'password'}}" class="input-blue"
+                placeholder="Confirm Password">
+            <mat-icon (click)="togglePasswordVisibility('confirm-password')"
+                fontIcon="{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
+        </div>
+        <button type="submit" mat-flat-button>Get Started</button>
+    </form>
+    } @else if (formType === 'forgot-password') {
+    <h1>Forgot your password?</h1>
+    <p>We will send you an email with instructions to reset your password.</p>
+    <form action="">
+        <input type="email" class="input-blue" placeholder="Email Address"
+            pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" required [(ngModel)]="email" name="emailInput"
+            #emailInput="ngModel">
+        <button type="submit" [disabled]="!emailInput.valid" mat-flat-button>Send Email</button>
+    </form>
+    } @else if (formType === 'reset-password') {
+    <h1>Reset password</h1>
+    <p>Create a new password for your Videoflix account.</p>
+    <form action="">
+        <div class="input-blue password-wrapper">
+            <input type="{{showPassword ? 'text' : 'password'}}" class="input-blue" placeholder="Enter a Password" [(ngModel)]="password" name="password"> 
+            <mat-icon (click)="togglePasswordVisibility('password')"
+                fontIcon="{{ showPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
+        </div>
+        <div class="input-blue password-wrapper">
+            <input type="{{showConfirmPassword ? 'text' : 'password'}}" class="input-blue"
+                placeholder="Confirm Password" [(ngModel)]="confirmPassword" name="confirmPassword">
+            <mat-icon (click)="togglePasswordVisibility('confirm-password')"
+                fontIcon="{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
+        </div>
+        <button type="submit" mat-flat-button [disabled]="checkPasswords()">Get Started</button>
+    </form>
+    }
+</div>

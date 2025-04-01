@@ -1,0 +1,6 @@
+@use './../../styles.scss' as *;
+
+section {
+    @include flex-position($jc: space-between, $fd: column);
+    @include background-img($url: url(./../../../public/img/login-background.png))
+}

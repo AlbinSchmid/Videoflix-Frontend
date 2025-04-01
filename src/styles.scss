@@ -14,6 +14,13 @@ $color-blue: #2E3EDF;
     font-weight: $fw;
 }
 
+@mixin background-img($url: url()) {
+    background: linear-gradient(180deg, #000000 -19.89%, rgba(0, 0, 0, 0.55) 40.46%, #000000 100%), $url;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
 :root {
     @include mat.button-overrides((filled-container-color: $color-blue,
         ));
@@ -34,6 +41,7 @@ body {
 section {
     height: 100vh;
     width: 100vw;
+    padding: 40px 96px;
 }
 
 header,
@@ -64,6 +72,34 @@ h1,
 p,
 a {
     text-align: center;
+}
+
+.input-blue {
+    @include font-style($fs: 18px);
+    border-color: $color-blue;
+    color: $color-blue;
+    border-radius: 12px;
+    padding-top: 12px;
+    padding-right: 24px;
+    padding-bottom: 12px;
+    padding-left: 24px;
+    gap: 10px;
+    border-width: 1px;
+
+    &::placeholder {
+        @include font-style($fs: 18px);
+        color: $color-blue;
+    }
+}
+
+mat-icon {
+    @include flex-position();
+    font-family: 'Material Icons' !important;
+}
+
+app-header, app-footer {
+    @include flex-position();
+    width: 100%;
 }
 
 @font-face {

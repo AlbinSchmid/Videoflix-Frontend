@@ -1,0 +1,67 @@
+@use './../../../../styles.scss' as *;
+
+.content {
+    @include flex-position($fd: column);
+    background-color: white;
+    border-radius: 48px;
+    width: 520px;
+    gap: 32px;
+    padding: 43px 56px;
+
+    h1 {
+        @include font-style($fs: 48px, $fw: 700);
+        color: $color-blue;
+    }
+
+    p {
+        @include font-style($fw: 500);
+        color: black;
+    }
+
+    a {
+        @include font-style($fw: 700);
+        color: $color-blue;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    .sign-up-div {
+        @include flex-position();
+        gap: 24px;
+    }
+}
+
+form {
+    @include flex-position($fd: column);
+    width: 100%;
+    gap: 32px;
+
+    input {
+        width: 100%;
+    }
+
+    .password-wrapper {
+        @include flex-position();
+        width: 100%;
+        border: 1px solid $color-blue;
+        padding: 0;
+        padding-right: 24px;
+
+        input {
+            border: none;
+            padding-right: 0px;
+        }
+
+        mat-icon {
+            color: $color-blue;
+            cursor: pointer;
+        }
+    }
+
+    button {
+        @include font-style($fw: 500);
+        padding: 24px 28px;
+    }
+}

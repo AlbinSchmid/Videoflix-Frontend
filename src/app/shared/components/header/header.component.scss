@@ -1,14 +1,15 @@
-@import './../../../../styles.scss';
+@use './../../../../styles.scss' as *;
 
 header {
     @include flex-position($jc: space-between);
+    height: 48px;
 
     img{
         height: 32px;
     }
 
-    button {
+    .login-btn {
         @include font-style($fw: 600);    
-        padding: 24px;
+        padding: 22px;
     }
 }

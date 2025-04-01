@@ -1,12 +1,8 @@
-@import './../../styles.scss';
+@use './../../styles.scss' as *;
 
 section {
     @include flex-position($jc: space-between, $fd: column, $ai: normal);
-    background: linear-gradient(180deg, #000000 -19.89%, rgba(0, 0, 0, 0.55) 40.46%, #000000 100%), url(./../../../public/img/landing-page-background.png);
-    background-position: center;
-    background-size: cover;
-    background-repeat: no-repeat;
-    padding: 40px 96px;
+    @include background-img($url: url(./../../../public/img/landing-page-background.png))
 }
 
 app-header, app-footer {
@@ -44,7 +40,7 @@ app-header, app-footer {
             }
         }
     
-        button {
+        a {
             @include font-style($fw: 700);
             height: 48px;
         }
