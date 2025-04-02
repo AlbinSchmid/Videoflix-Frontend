@@ -1,29 +1,60 @@
-import { Component, Input } from '@angular/core';
+import { Component, inject, Input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
+import { ApiService } from '../../services/api.service';
 
 @Component({
   selector: 'app-form',
   imports: [
     MatIconModule,
-    MatButtonModule, 
+    MatButtonModule,
     FormsModule,
   ],
   templateUrl: './form.component.html',
   styleUrl: './form.component.scss'
 })
 export class FormComponent {
+  apiService = inject(ApiService)
   @Input() formType: string = '';
 
+  loginEndpoint: string = 'login/'
+  registrationEndpoint: string = 'registraion/'
   password: string = '';
   confirmPassword: string = '';
-  email: string = '';
 
   showPassword: boolean = false;
   showConfirmPassword: boolean = false;
 
+  loginData = {
+    email: '',
+    password: '',
+  }
 
+  registrationData = {
+    email: '',
+    password: '',
+    repeated_password: ''
+  }
+
+  forgotPasswordData = {
+    email: '',
+  }
+
+  submitLoginForm(form: any) {
+    this.apiService.postData(this.loginEndpoint, this.loginData)
+  }
+
+  submitRegistrationForm(form: any) {
+    this.apiService.postData(this.registrationEndpoint, this.registrationData).subscribe({
+      next: (response) => {
+        console.log(response)
+      },
+      error: (error) => {
+        console.log(error)
+      }
+    })
+  }
 
   /**
    * Toggles the visibility of a password or confirm password field.

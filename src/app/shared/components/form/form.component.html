@@ -1,11 +1,11 @@
 <div class="content">
     @if (formType === 'login') {
     <h1>Log in</h1>
-    <form action="">
+    <form (ngSubmit)="submitLoginForm(from)" #from="ngForm">
         <input type="email" class="input-blue" placeholder="Email Address"
-            pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" required>
+            pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" required [(ngModel)]="loginData.email" name="emailLogin">
         <div class="input-blue password-wrapper">
-            <input type="{{showPassword ? 'text' : 'password'}}" class="input-blue" placeholder="Password">
+            <input type="{{showPassword ? 'text' : 'password'}}" class="input-blue" placeholder="Password" [(ngModel)]="loginData.password" name="passwordLogin">
             <mat-icon (click)="togglePasswordVisibility('password')"
                 fontIcon="{{ showPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
         </div>
@@ -18,17 +18,17 @@
     </div>
     } @else if (formType === 'signup') {
     <h1>Sign Up</h1>
-    <form action="">
+    <form (ngSubmit)="submitRegistrationForm(from)" #from="ngForm">
         <input type="email" class="input-blue" placeholder="Email Address"
-            pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" required>
+            pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" required [(ngModel)]="registrationData.email" name="emailSignup">
         <div class="input-blue password-wrapper">
-            <input type="{{showPassword ? 'text' : 'password'}}" class="input-blue" placeholder="Enter a Password">
+            <input type="{{showPassword ? 'text' : 'password'}}" class="input-blue" placeholder="Enter a Password" [(ngModel)]="registrationData.password" name="passwordSignup">
             <mat-icon (click)="togglePasswordVisibility('password')"
                 fontIcon="{{ showPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
         </div>
         <div class="input-blue password-wrapper">
             <input type="{{showConfirmPassword ? 'text' : 'password'}}" class="input-blue"
-                placeholder="Confirm Password">
+                placeholder="Confirm Password" [(ngModel)]="registrationData.repeated_password" name="repeatedPasswordSignup">
             <mat-icon (click)="togglePasswordVisibility('confirm-password')"
                 fontIcon="{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
         </div>
@@ -39,7 +39,7 @@
     <p>We will send you an email with instructions to reset your password.</p>
     <form action="">
         <input type="email" class="input-blue" placeholder="Email Address"
-            pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" required [(ngModel)]="email" name="emailInput"
+            pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" required [(ngModel)]="forgotPasswordData.email" name="emailInput"
             #emailInput="ngModel">
         <button type="submit" [disabled]="!emailInput.valid" mat-flat-button>Send Email</button>
     </form>
