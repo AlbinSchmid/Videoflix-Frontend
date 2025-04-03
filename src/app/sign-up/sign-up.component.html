@@ -1,5 +1,6 @@
 <section>
     <app-header></app-header>
-    <app-form [formType]="'signup'"></app-form>
+    <app-form [formType]="'signup'" [signupEmail]="email" (errorMessage)="errorMessage = $event"></app-form>
     <app-footer></app-footer>
+    <app-error-message *ngIf="errorMessage != ''" [errorMessage]="errorMessage" (closeErrorMessage)="errorMessage = $event" class="app-error-message" ></app-error-message>
 </section>

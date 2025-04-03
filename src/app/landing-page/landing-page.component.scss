@@ -33,14 +33,23 @@ app-header, app-footer {
             gap: 10px;
             border-radius: 40px;
             padding: 12px 24px;
+            margin-bottom: 4px;
     
             &::placeholder {
                 @include font-style();
                 color: white;
             }
         }
+
+        .error {
+            border-color: red !important;
+        }
+
+        .correct {
+            border-color: #00cc00 !important;
+        }
     
-        a {
+        button {
             @include font-style($fw: 700);
             height: 48px;
         }

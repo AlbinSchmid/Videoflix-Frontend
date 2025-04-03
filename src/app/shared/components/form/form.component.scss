@@ -40,6 +40,11 @@ form {
 
     input {
         width: 100%;
+
+        &:-webkit-autofill {
+            transition: background-color 9999s ease-in-out 0s;
+            -webkit-text-fill-color: $color-blue;
+        }
     }
 
     .password-wrapper {

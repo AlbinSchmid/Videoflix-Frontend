@@ -92,6 +92,39 @@ a {
     }
 }
 
+.span-error {
+    @include flex-position($jc: flex-start);
+    @include font-style($fs: 14px);
+    position: absolute;
+    color: red;
+
+    mat-icon {
+        @include flex-position();
+        @include font-style($fs: 14px);
+        color: red;
+    }
+}
+
+.label-input {
+    width: 100%;
+}
+
+.app-error-message {
+    position: absolute;
+    bottom: 50px;
+    left: 50px;
+    animation: left-to-right 250ms ease-in-out;
+
+    @keyframes left-to-right {
+        0% {
+            transform: translateX(-100%);
+        }
+        100% {
+            transform: translateX(0);
+        }
+    }
+}
+
 mat-icon {
     @include flex-position();
     font-family: 'Material Icons' !important;

@@ -1,14 +1,24 @@
 <div class="content">
     @if (formType === 'login') {
     <h1>Log in</h1>
-    <form (ngSubmit)="submitLoginForm(from)" #from="ngForm">
-        <input type="email" class="input-blue" placeholder="Email Address"
-            pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" required [(ngModel)]="loginData.email" name="emailLogin">
-        <div class="input-blue password-wrapper">
-            <input type="{{showPassword ? 'text' : 'password'}}" class="input-blue" placeholder="Password" [(ngModel)]="loginData.password" name="passwordLogin">
+    <form (ngSubmit)="submitLoginForm(from)" #from="ngForm">#
+        <label class="label-input">
+            <input type="email" class="input-blue" placeholder="Email Address"
+                pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}" required [(ngModel)]="loginData.email"
+                name="emailLogin" #emailLogin="ngModel">
+            @if (!emailLogin.valid && emailLogin.touched) {
+            <span *ngIf="emailLogin.value.length == 0" class="span-error"><mat-icon fontIcon="warning"></mat-icon>The
+                email address is required.</span>
+            <span *ngIf="emailLogin.value.length > 0" class="span-error"><mat-icon fontIcon="warning"></mat-icon>Please
+                enter a valid email address.</span>
+            }
+        </label>
+        <label class="input-blue password-wrapper">
+            <input type="{{showPassword ? 'text' : 'password'}}" class="input-blue" placeholder="Password"
+                [(ngModel)]="loginData.password" name="passwordLogin">
             <mat-icon (click)="togglePasswordVisibility('password')"
                 fontIcon="{{ showPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
-        </div>
+        </label>
         <button type="submit" mat-flat-button>Log in</button>
     </form>
     <a href="forgot-password">Forgot password?</a>
@@ -19,45 +29,82 @@
     } @else if (formType === 'signup') {
     <h1>Sign Up</h1>
     <form (ngSubmit)="submitRegistrationForm(from)" #from="ngForm">
-        <input type="email" class="input-blue" placeholder="Email Address"
-            pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" required [(ngModel)]="registrationData.email" name="emailSignup">
-        <div class="input-blue password-wrapper">
-            <input type="{{showPassword ? 'text' : 'password'}}" class="input-blue" placeholder="Enter a Password" [(ngModel)]="registrationData.password" name="passwordSignup">
-            <mat-icon (click)="togglePasswordVisibility('password')"
-                fontIcon="{{ showPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
-        </div>
-        <div class="input-blue password-wrapper">
-            <input type="{{showConfirmPassword ? 'text' : 'password'}}" class="input-blue"
-                placeholder="Confirm Password" [(ngModel)]="registrationData.repeated_password" name="repeatedPasswordSignup">
-            <mat-icon (click)="togglePasswordVisibility('confirm-password')"
-                fontIcon="{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
-        </div>
+        <label class="label-input">
+            <input type="email" class="input-blue" placeholder="Email Address"
+                pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}" required [(ngModel)]="registrationData.email"
+                name="emailSignup" #emailSignup="ngModel">
+            @if (emailSignup.invalid && emailSignup.touched || registrationError && emailSignup.invalid) {
+            <span *ngIf="emailSignup.value?.length == 0 || !emailSignup.value" class="span-error"><mat-icon
+                    fontIcon="warning"></mat-icon>The
+                email address is required.</span>
+            <span *ngIf="emailSignup.value?.length > 0" class="span-error"><mat-icon
+                    fontIcon="warning"></mat-icon>Please
+                enter a valid email address.</span>
+            }
+        </label>
+        <label class="label-input">
+            <div class="input-blue password-wrapper">
+                <input type="{{showPassword ? 'text' : 'password'}}" class="input-blue" minlength="8" required
+                    pattern="^(?!\d+$).+" placeholder="Enter a Password" [(ngModel)]="registrationData.password"
+                    name="passwordSignup" #passwordSignup="ngModel">
+                <mat-icon (click)="togglePasswordVisibility('password')"
+                    fontIcon="{{ showPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
+            </div>
+            @if (passwordSignup.invalid && passwordSignup.touched || registrationError && passwordSignup.invalid) {
+            <span *ngIf="passwordSignup.value?.length < 8 && passwordSignup.value?.length > 0"
+                class="span-error"><mat-icon fontIcon="warning"></mat-icon>The
+                password must be at least 8 characters long.</span>
+            <span *ngIf="passwordSignup.value?.length == 0 || !passwordSignup.value" class="span-error"><mat-icon
+                    fontIcon="warning"></mat-icon>Please
+                enter a valid password.</span>
+            <span *ngIf="passwordSignup.value?.length > 7 && onlyNumbers(passwordSignup.value)"
+                class="span-error"><mat-icon fontIcon="warning"></mat-icon> The password must not contain only
+                numbers.</span>
+            }
+        </label>
+        <label class="label-input">
+            <div class="input-blue password-wrapper">
+                <input type="{{showConfirmPassword ? 'text' : 'password'}}" class="input-blue"
+                    placeholder="Confirm Password" [(ngModel)]="registrationData.repeated_password"
+                    name="repeatedPasswordSignup" #repeatedPasswordSignup="ngModel" required>
+                <mat-icon (click)="togglePasswordVisibility('confirm-password')"
+                    fontIcon="{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
+            </div>
+            @if (repeatedPasswordSignup.value != passwordSignup.value && repeatedPasswordSignup.touched ||
+            registrationError && !repeatedPasswordSignup.value || repeatedPasswordSignup.touched && !repeatedPasswordSignup.value) {
+            <span *ngIf="repeatedPasswordSignup.value != passwordSignup.value || !repeatedPasswordSignup.value"
+                class="span-error"><mat-icon fontIcon="warning"></mat-icon>Passwords must match.</span>
+            }
+        </label>
         <button type="submit" mat-flat-button>Get Started</button>
     </form>
     } @else if (formType === 'forgot-password') {
     <h1>Forgot your password?</h1>
     <p>We will send you an email with instructions to reset your password.</p>
     <form action="">
-        <input type="email" class="input-blue" placeholder="Email Address"
-            pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" required [(ngModel)]="forgotPasswordData.email" name="emailInput"
-            #emailInput="ngModel">
+        <label class="label-input">
+            <input type="email" class="input-blue" placeholder="Email Address"
+                pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}" required
+                [(ngModel)]="forgotPasswordData.email" name="emailInput" #emailInput="ngModel">
+        </label>
         <button type="submit" [disabled]="!emailInput.valid" mat-flat-button>Send Email</button>
     </form>
     } @else if (formType === 'reset-password') {
     <h1>Reset password</h1>
     <p>Create a new password for your Videoflix account.</p>
     <form action="">
-        <div class="input-blue password-wrapper">
-            <input type="{{showPassword ? 'text' : 'password'}}" class="input-blue" placeholder="Enter a Password" [(ngModel)]="password" name="password"> 
+        <label class="input-blue password-wrapper">
+            <input type="{{showPassword ? 'text' : 'password'}}" class="input-blue" placeholder="Enter a Password"
+                [(ngModel)]="password" name="password">
             <mat-icon (click)="togglePasswordVisibility('password')"
                 fontIcon="{{ showPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
-        </div>
-        <div class="input-blue password-wrapper">
+        </label>
+        <label class="input-blue password-wrapper">
             <input type="{{showConfirmPassword ? 'text' : 'password'}}" class="input-blue"
                 placeholder="Confirm Password" [(ngModel)]="confirmPassword" name="confirmPassword">
             <mat-icon (click)="togglePasswordVisibility('confirm-password')"
                 fontIcon="{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
-        </div>
+        </label>
         <button type="submit" mat-flat-button [disabled]="checkPasswords()">Get Started</button>
     </form>
     }
