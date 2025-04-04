@@ -5,15 +5,20 @@
         <p>Enter your email to create or restart your subscription.</p>
         <form (ngSubmit)="submitForm(form)" #form="ngForm">
             <label>
-                <input type="email" pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}" required (input)="this.showEmailError = false"
-                    placeholder="Email Address" [(ngModel)]="email" name="emailInput" #emailInput="ngModel" [ngClass]="{'error': emailInput.invalid && emailInput.touched || showEmailError, 'correct': emailInput.valid && emailInput.touched}">
+                <input type="email" pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}" required
+                    (input)="this.showEmailError = false" placeholder="Email Address" [(ngModel)]="data.email"
+                    name="emailInput" #emailInput="ngModel"
+                    [ngClass]="{'error': emailInput.invalid && emailInput.touched || showEmailError, 'correct': emailInput.valid && emailInput.touched}">
                 @if (!emailInput.valid && emailInput.touched || showEmailError) {
-                    <span *ngIf="emailInput.value.length == 0 || showEmailError" class="span-error"><mat-icon fontIcon="warning"></mat-icon>The email address is required.</span>
-                    <span *ngIf="emailInput.value.length > 0" class="span-error"><mat-icon fontIcon="warning"></mat-icon>Please enter a valid email address.</span>
+                <span *ngIf="emailInput.value.length == 0 || showEmailError" class="span-error"><mat-icon
+                        fontIcon="warning"></mat-icon>The email address is required.</span>
+                <span *ngIf="emailInput.value.length > 0" class="span-error"><mat-icon
+                        fontIcon="warning"></mat-icon>Please enter a valid email address.</span>
                 }
             </label>
             <button mat-flat-button type="submit">
-                Sign up >
+                <mat-spinner *ngIf="showLoadingSpinner"></mat-spinner>
+                <span *ngIf="!showLoadingSpinner">Sign up ></span>
             </button>
         </form>
     </div>

@@ -7,6 +7,7 @@ import { FormComponent } from '../shared/components/form/form.component';
 import { ActivatedRoute } from '@angular/router';
 import { ErrorMessageComponent } from '../shared/components/error-message/error-message.component';
 import { CommonModule } from '@angular/common';
+import { ErrorService } from '../shared/services/error.service';
 
 @Component({
   selector: 'app-sign-up',
@@ -23,9 +24,9 @@ import { CommonModule } from '@angular/common';
   styleUrl: './sign-up.component.scss'
 })
 export class SignUpComponent implements OnInit {
-  route = inject(ActivatedRoute)
+  errorService = inject(ErrorService)
+  router = inject(ActivatedRoute)
   email: string = ''
-  errorMessage: string = ''
 
   /**
    * Lifecycle hook that is called after Angular has initialized all data-bound properties of a directive.
@@ -34,7 +35,7 @@ export class SignUpComponent implements OnInit {
    * @returns void
    */
   ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
+    this.router.queryParams.subscribe(params => {
       this.email = params['email']
     })
   }

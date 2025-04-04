@@ -1,15 +1,17 @@
 <div class="content">
     @if (formType === 'login') {
     <h1>Log in</h1>
-    <form (ngSubmit)="submitLoginForm(from)" #from="ngForm">#
+    <form (ngSubmit)="submitLoginForm(from)" #from="ngForm">
         <label class="label-input">
             <input type="email" class="input-blue" placeholder="Email Address"
                 pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}" required [(ngModel)]="loginData.email"
                 name="emailLogin" #emailLogin="ngModel">
-            @if (!emailLogin.valid && emailLogin.touched) {
-            <span *ngIf="emailLogin.value.length == 0" class="span-error"><mat-icon fontIcon="warning"></mat-icon>The
+            @if (emailLogin.invalid && emailLogin.touched || showError && emailLogin.invalid) {
+            <span *ngIf="emailLogin.value?.length == 0 || !emailLogin.value" class="span-error"><mat-icon
+                    fontIcon="warning"></mat-icon>The
                 email address is required.</span>
-            <span *ngIf="emailLogin.value.length > 0" class="span-error"><mat-icon fontIcon="warning"></mat-icon>Please
+            <span *ngIf="emailLogin.value?.length > 0" class="span-error"><mat-icon
+                    fontIcon="warning"></mat-icon>Please
                 enter a valid email address.</span>
             }
         </label>
@@ -19,7 +21,10 @@
             <mat-icon (click)="togglePasswordVisibility('password')"
                 fontIcon="{{ showPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
         </label>
-        <button type="submit" mat-flat-button>Log in</button>
+        <button type="submit" mat-flat-button [disabled]="showLoadingSpinner">
+            <mat-spinner *ngIf="showLoadingSpinner"></mat-spinner>
+            <span *ngIf="!showLoadingSpinner">Log in</span>
+        </button>
     </form>
     <a href="forgot-password">Forgot password?</a>
     <div class="sign-up-div">
@@ -33,7 +38,7 @@
             <input type="email" class="input-blue" placeholder="Email Address"
                 pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}" required [(ngModel)]="registrationData.email"
                 name="emailSignup" #emailSignup="ngModel">
-            @if (emailSignup.invalid && emailSignup.touched || registrationError && emailSignup.invalid) {
+            @if (emailSignup.invalid && emailSignup.touched || showError && emailSignup.invalid) {
             <span *ngIf="emailSignup.value?.length == 0 || !emailSignup.value" class="span-error"><mat-icon
                     fontIcon="warning"></mat-icon>The
                 email address is required.</span>
@@ -50,7 +55,7 @@
                 <mat-icon (click)="togglePasswordVisibility('password')"
                     fontIcon="{{ showPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
             </div>
-            @if (passwordSignup.invalid && passwordSignup.touched || registrationError && passwordSignup.invalid) {
+            @if (passwordSignup.invalid && passwordSignup.touched || showError && passwordSignup.invalid) {
             <span *ngIf="passwordSignup.value?.length < 8 && passwordSignup.value?.length > 0"
                 class="span-error"><mat-icon fontIcon="warning"></mat-icon>The
                 password must be at least 8 characters long.</span>
@@ -71,12 +76,16 @@
                     fontIcon="{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
             </div>
             @if (repeatedPasswordSignup.value != passwordSignup.value && repeatedPasswordSignup.touched ||
-            registrationError && !repeatedPasswordSignup.value || repeatedPasswordSignup.touched && !repeatedPasswordSignup.value) {
+            showError && !repeatedPasswordSignup.value || repeatedPasswordSignup.touched &&
+            !repeatedPasswordSignup.value) {
             <span *ngIf="repeatedPasswordSignup.value != passwordSignup.value || !repeatedPasswordSignup.value"
                 class="span-error"><mat-icon fontIcon="warning"></mat-icon>Passwords must match.</span>
             }
         </label>
-        <button type="submit" mat-flat-button>Get Started</button>
+        <button type="submit" mat-flat-button [disabled]="showLoadingSpinner">
+            <mat-spinner *ngIf="showLoadingSpinner"></mat-spinner>
+            <span *ngIf="!showLoadingSpinner">Get Started</span>
+        </button>
     </form>
     } @else if (formType === 'forgot-password') {
     <h1>Forgot your password?</h1>
@@ -95,13 +104,13 @@
     <form action="">
         <label class="input-blue password-wrapper">
             <input type="{{showPassword ? 'text' : 'password'}}" class="input-blue" placeholder="Enter a Password"
-                [(ngModel)]="password" name="password">
+                [(ngModel)]="resetPasswordData.password" name="password">
             <mat-icon (click)="togglePasswordVisibility('password')"
                 fontIcon="{{ showPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
         </label>
         <label class="input-blue password-wrapper">
             <input type="{{showConfirmPassword ? 'text' : 'password'}}" class="input-blue"
-                placeholder="Confirm Password" [(ngModel)]="confirmPassword" name="confirmPassword">
+                placeholder="Confirm Password" [(ngModel)]="resetPasswordData.repeated_password" name="confirmPassword">
             <mat-icon (click)="togglePasswordVisibility('confirm-password')"
                 fontIcon="{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
         </label>

@@ -1,5 +1,6 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { ErrorService } from '../../services/error.service';
 
 @Component({
   selector: 'app-error-message',
@@ -10,10 +11,7 @@ import { MatIconModule } from '@angular/material/icon';
   styleUrl: './error-message.component.scss'
 })
 export class ErrorMessageComponent {
+errorService = inject(ErrorService);
 @Input() errorMessage: string = '';
-@Output() closeErrorMessage = new EventEmitter<string>();
-
-  close() {
-    this.closeErrorMessage.emit('');
-  }
+@Input() errorIndex: number = 0;
 }

@@ -68,5 +68,7 @@ form {
     button {
         @include font-style($fw: 500);
         padding: 24px 28px;
+        min-width: 160px;
+        min-height: 50px;
     }
 }

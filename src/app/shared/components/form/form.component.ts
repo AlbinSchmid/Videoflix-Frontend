@@ -5,6 +5,9 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { CommonModule } from '@angular/common';
 import { DeferBlockBehavior } from '@angular/core/testing';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { Router } from '@angular/router';
+import { ErrorService } from '../../services/error.service';
 
 @Component({
   selector: 'app-form',
@@ -12,25 +15,28 @@ import { DeferBlockBehavior } from '@angular/core/testing';
     MatIconModule,
     MatButtonModule,
     FormsModule,
-    CommonModule
+    CommonModule,
+    MatProgressSpinnerModule
   ],
   templateUrl: './form.component.html',
   styleUrl: './form.component.scss'
 })
 export class FormComponent {
+  errorService = inject(ErrorService)
+  router = inject(Router);
   apiService = inject(ApiService)
   @Input() formType: string = '';
   @Input() signupEmail: string = '';
-  @Output() errorMessage = new EventEmitter<string>();
+  @Input() loginEmail: string = '';
 
-  loginEndpoint: string = 'login/'
-  registrationEndpoint: string = 'registraion/'
-  password: string = '';
-  confirmPassword: string = '';
 
+  loginEndpoint: string = 'login/';
+  registrationEndpoint: string = 'registraion/';
+
+  showLoadingSpinner: boolean = false;
   showPassword: boolean = false;
   showConfirmPassword: boolean = false;
-  registrationError: boolean = false;
+  showError: boolean = false;
 
   loginData = {
     email: '',
@@ -44,16 +50,36 @@ export class FormComponent {
   forgotPasswordData = {
     email: '',
   }
+  resetPasswordData = {
+    password: '',
+    repeated_password: ''
+  }
+
 
   /**
-   * Lifecycle hook that is called after Angular has initialized the component.
-   * This method checks if the `signupEmail` property is not an empty string.
-   * If it contains a value, it assigns that value to the `email` property
-   * of the `registrationData` object.
+   * Lifecycle hook that is called after Angular has initialized all data-bound properties of a directive.
+   * This method is used to perform component initialization logic.
+   * Specifically, it sets the email address from the landing page into the form.
    */
   ngOnInit(): void {
+    this.setEmailFromLandingPage();
+  }
+
+  /**
+   * Sets the email address for either the registration or login process
+   * based on the provided email values from the landing page.
+   *
+   * - If `signupEmail` is not an empty string, it assigns its value to `registrationData.email`.
+   * - Otherwise, if `loginEmail` is not an empty string, it assigns its value to `loginData.email`.
+   *
+   * This method ensures that the appropriate email field is populated
+   * depending on the context of the user's action.
+   */
+  setEmailFromLandingPage(): void {
     if (this.signupEmail !== '') {
       this.registrationData.email = this.signupEmail;
+    } else if (this.loginEmail !== '') {
+      this.loginData.email = this.loginEmail;
     }
   }
 
@@ -62,8 +88,12 @@ export class FormComponent {
    *
    * @param form - The form object containing the login details.
    */
-  submitLoginForm(form: any) {
-    this.apiService.postData(this.loginEndpoint, this.loginData)
+  submitLoginForm(form: any): void {
+    if (form.valid) {
+      this.sendPostRequest(this.loginEndpoint, this.loginData);
+    } else {
+      this.showError = true
+    }
   }
 
   /**
@@ -83,12 +113,12 @@ export class FormComponent {
    *   <!-- form fields here -->
    * </form>
    */
-  submitRegistrationForm(form: any) {
-    if (form.valid) {
-      this.registrationError = false;
+  submitRegistrationForm(form: any): void {
+    if (form.valid && this.registrationData.password === this.registrationData.repeated_password) {
+      this.showError = false;
       this.sendPostRequest(this.registrationEndpoint, this.registrationData);
     } else {
-      this.registrationError = true;
+      this.showError = true;
     }
   }
 
@@ -107,17 +137,93 @@ export class FormComponent {
    * - Extracts the first error message from the `non_field_errors` array in the error response.
    * - Emits the extracted error message using the `errorMessage` event emitter.
    */
-  sendPostRequest(endpoint: string, data: object) {
+  sendPostRequest(endpoint: string, data: object): void {
+    this.showLoadingSpinner = true;
     this.apiService.postData(endpoint, data).subscribe({
-      next: (response) => {
-        console.log(response);
+      next: (res) => {
+        this.requestSuccess(res);
       },
-      error: (error) => {
-        console.error(error);
-        let errorMessageRegistration = error.error['non_field_errors'][0];
-        this.errorMessage.emit(errorMessageRegistration);
+      error: (err) => {
+        this.requestError(err);
       }
     })
+  }
+
+  /**
+   * Handles the successful response of a request.
+   * 
+   * This method is triggered when a request completes successfully. It performs the following actions:
+   * - Logs the response to the console.
+   * - Clears any existing error messages using the `errorService`.
+   * - Hides the loading spinner by setting `showLoadingSpinner` to `false`.
+   * - Navigates the user to the login page using the router.
+   * - Clears the form data to reset the form state.
+   * 
+   * @param res - The response object received from the successful request.
+   */
+  requestSuccess(res: any): void {
+    console.log(res);
+    this.errorService.errorMessages = []
+    this.showLoadingSpinner = false;
+    this.router.navigate(['/login']);
+    this.clearFormData();
+  }
+
+  /**
+   * Handles and processes error responses from HTTP requests.
+   * 
+   * @param err - The error object received from the HTTP request.
+   *   It is expected to have an `error` property containing the error details.
+   * 
+   * This method performs the following actions:
+   * - Logs the error to the console for debugging purposes.
+   * - Disables the loading spinner by setting `showLoadingSpinner` to `false`.
+   * - Extracts error messages from the `err.error` object, which can contain:
+   *   - Arrays of error messages.
+   *   - Single string error messages.
+   * - Updates the `errorMessages` property of the `errorService` with the extracted messages.
+   */
+  requestError(err: any): void {
+    console.error(err);
+    this.showLoadingSpinner = false;
+    let errorMessages: string[] = [];
+    const errors = err.error;
+    for (const key in errors) {
+      if (Array.isArray(errors[key])) {
+        errorMessages.push(...errors[key]);
+      } else if (typeof errors[key] === 'string') {
+        errorMessages.push(errors[key]);
+      }
+    }
+    this.errorService.errorMessages = errorMessages;
+  }
+
+  /**
+   * Resets all form data objects to their initial empty state.
+   * 
+   * This method clears the following data objects:
+   * - `loginData`: Resets `email` and `password` fields to empty strings.
+   * - `registrationData`: Resets `email`, `password`, and `repeated_password` fields to empty strings.
+   * - `forgotPasswordData`: Resets the `email` field to an empty string.
+   * - `resetPasswordData`: Resets `password` and `repeated_password` fields to empty strings.
+   */
+  clearFormData():void {
+    this.loginData = {
+      email: '',
+      password: ''
+    };
+    this.registrationData = {
+      email: '',
+      password: '',
+      repeated_password: ''
+    };
+    this.forgotPasswordData = {
+      email: ''
+    };
+    this.resetPasswordData = {
+      password: '',
+      repeated_password: ''
+    };
   }
 
   /**
@@ -139,8 +245,8 @@ export class FormComponent {
    * @returns {boolean} - Returns `false` if both fields are non-empty and match, otherwise returns `true`.
    */
   checkPasswords(): boolean {
-    if (this.password != '' && this.confirmPassword != '') {
-      if (this.password === this.confirmPassword) {
+    if (this.resetPasswordData.password != '' && this.resetPasswordData.repeated_password != '') {
+      if (this.resetPasswordData.password === this.resetPasswordData.repeated_password) {
         return false;
       }
       return true;

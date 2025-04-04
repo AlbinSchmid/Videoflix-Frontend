@@ -1,5 +1,10 @@
 <section>
     <app-header [login]="true"></app-header>
-    <app-form [formType]="'login'"></app-form>
+    <app-form [formType]="'login'" [loginEmail]="email"></app-form>
     <app-footer></app-footer>
+    @for (error of errorService.errorMessages; track $index) {
+    <app-error-message [ngStyle]="{'margin-bottom.px': $index == 0 ? 0 : $index * 100}" [errorMessage]="error"
+        [errorIndex]="$index"
+        class="app-error-message"></app-error-message>
+    }
 </section>
