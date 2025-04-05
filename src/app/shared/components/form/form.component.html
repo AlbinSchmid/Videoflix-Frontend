@@ -68,11 +68,11 @@
         </label>
         <label class="label-input">
             <div class="input-blue password-wrapper">
-                <input type="{{showConfirmPassword ? 'text' : 'password'}}" class="input-blue"
+                <input type="{{showRepeatedPassword ? 'text' : 'password'}}" class="input-blue"
                     placeholder="Confirm Password" [(ngModel)]="registrationData.repeated_password"
                     name="repeatedPasswordSignup" #repeatedPasswordSignup="ngModel" required>
                 <mat-icon (click)="togglePasswordVisibility('confirm-password')"
-                    fontIcon="{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
+                    fontIcon="{{ showRepeatedPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
             </div>
             @if (repeatedPasswordSignup.value != passwordSignup.value && repeatedPasswordSignup.touched ||
             showError && !repeatedPasswordSignup.value || repeatedPasswordSignup.touched &&
@@ -134,11 +134,11 @@
         </label>
         <label class="label-input">
             <div class="input-blue password-wrapper">
-                <input type="{{showConfirmPassword ? 'text' : 'password'}}" class="input-blue"
+                <input type="{{showRepeatedPassword ? 'text' : 'password'}}" class="input-blue"
                     placeholder="Confirm Password" [(ngModel)]="resetPasswordData.repeated_password" required minlength="8" #repeatedPasswordResetPassword="ngModel"
                     name="confirmPassword">
                 <mat-icon (click)="togglePasswordVisibility('confirm-password')"
-                    fontIcon="{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
+                    fontIcon="{{ showRepeatedPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
             </div>
             @if (repeatedPasswordResetPassword.value != passwordResetPassword.value && repeatedPasswordResetPassword.touched ||
             showError && !repeatedPasswordResetPassword.value || repeatedPasswordResetPassword.touched &&

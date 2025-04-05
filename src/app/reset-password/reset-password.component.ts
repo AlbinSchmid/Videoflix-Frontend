@@ -20,7 +20,7 @@ import { ErrorMessageComponent } from '../shared/components/error-message/error-
   styleUrl: './reset-password.component.scss'
 })
 export class ResetPasswordComponent {
-  route = inject(ActivatedRoute);
+  router = inject(ActivatedRoute);
   apiService = inject(ApiService);
 
   endpoint: string = 'reset-password/';
@@ -45,8 +45,9 @@ export class ResetPasswordComponent {
    */
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-      this.data.uid = this.route.snapshot.paramMap.get('uid');
-      this.data.token = this.route.snapshot.paramMap.get('token');
+      this.data.uid = this.router.snapshot.paramMap.get('uid');
+      this.data.token = this.router.snapshot.paramMap.get('token');
+      this.sendPostRequest();
     }
   }
 

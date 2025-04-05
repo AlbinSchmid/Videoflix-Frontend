@@ -33,7 +33,6 @@ export class FormComponent {
     token: null
   };
 
-
   loginEndpoint: string = 'login/';
   registrationEndpoint: string = 'registraion/';
   forgotPasswordEndpoint: string = 'forgot-password/';
@@ -41,7 +40,7 @@ export class FormComponent {
 
   showLoadingSpinner: boolean = false;
   showPassword: boolean = false;
-  showConfirmPassword: boolean = false;
+  showRepeatedPassword: boolean = false;
   showError: boolean = false;
 
   loginData = {
@@ -133,6 +132,9 @@ export class FormComponent {
     this.apiService.postData(endpoint, data).subscribe({
       next: (res) => {
         this.requestSuccess(res);
+        if (endpoint === this.resetPasswordEndpoint) {
+          this.router.navigate(['/login'])
+        }
         form.reset();
       },
       error: (err) => {
@@ -150,9 +152,9 @@ export class FormComponent {
    */
   requestSuccess(res: any): void {
     this.showPassword = false;
-    this.showConfirmPassword = false;
+    this.showRepeatedPassword = false;
     this.showLoadingSpinner = false;
-    this.getSucessOrErrorMessages(res, 'success');
+    this.getSuccessOrErrorMessages(res, 'success');
   }
 
   /**
@@ -164,8 +166,7 @@ export class FormComponent {
    */
   requestError(err: any): void {
     console.error(err);
-    const errors = err.error;
-    this.getSucessOrErrorMessages(errors, 'error');
+    this.getSuccessOrErrorMessages(err.error, 'error');
     this.showLoadingSpinner = false;
   }
 
@@ -179,9 +180,9 @@ export class FormComponent {
    * @param type - A string indicating the type of messages to process. Should be either `'error'`
    *               or `'success'`.
    */
-  getSucessOrErrorMessages(messages: string[], type: string): void {
-    this.errorService.errorMessages = []
-    this.errorService.successMessages = []
+  getSuccessOrErrorMessages(messages: string[], type: string): void {
+    this.errorService.errorMessages = [];
+    this.errorService.successMessages = [];
     for (const key in messages) {
       if (Array.isArray(messages[key])) {
         type === 'error' ? this.errorService.errorMessages.push(...messages[key]) : this.errorService.successMessages.push(...messages[key]);
@@ -192,15 +193,15 @@ export class FormComponent {
   }
 
   /**
-   * Toggles the visibility of a password or confirm password field.
+   * Toggles the visibility of a password or repeated password field.
    * 
-   * @param passwordType - A string indicating the type of password field. Use 'password' for the main password field or any other string for the confirm password field.
+   * @param passwordType - A string indicating the type of password field. Use 'password' for the main password field or any other string for the repeated password field.
    */
   togglePasswordVisibility(passwordType: string): void {
     if (passwordType === 'password') {
       this.showPassword = !this.showPassword;
     } else {
-      this.showConfirmPassword = !this.showConfirmPassword;
+      this.showRepeatedPassword = !this.showRepeatedPassword;
     }
   }
 
@@ -212,9 +213,8 @@ export class FormComponent {
   checkResetPasswords(): boolean {
     if (this.resetPasswordData.password != '' && this.resetPasswordData.repeated_password != '') {
       return this.resetPasswordData.password === this.resetPasswordData.repeated_password ? false : true;
-    } else {
-      return true;
-    }
+    } 
+    return true;
   }
 
   /**

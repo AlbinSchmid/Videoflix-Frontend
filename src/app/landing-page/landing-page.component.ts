@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../shared/services/api.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { ErrorService } from '../shared/services/error.service';
 
 @Component({
   selector: 'app-landing-page',
@@ -26,6 +27,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 })
 export class LandingPageComponent {
   apiService = inject(ApiService)
+  errorService = inject(ErrorService)
   router = inject(Router)
 
   showLoadingSpinner: boolean = false
@@ -78,26 +80,38 @@ export class LandingPageComponent {
     })
   }
 
+
   /**
-   * Handles the response from a request and navigates the user to the appropriate page
-   * based on the existence of their account. If the account exists, the user is redirected
-   * to the login page with their email as a query parameter. Otherwise, they are redirected
-   * to the registration page with their email as a query parameter.
+   * Handles the success response of a request and navigates the user
+   * to the appropriate route based on the response data.
    *
-   * @param res - The response object containing the result of the request.
-   * @param res.exist - A boolean indicating whether the account exists.
+   * @param res - The response object from the request. It is expected to have an `exist` property
+   *              indicating whether the user exists, and potentially other string properties
+   *              containing success messages.
    *
-   * Side Effects:
-   * - Navigates to either the login or registration page.
-   * - Updates the `showEmailError` and `showLoadingSpinner` flags to `false`.
+   * @remarks
+   * - If `res.exist` is `true`, the user is navigated to the 'login' route with the email as a query parameter.
+   *   Success messages from the response are stored in the `errorService.successMessages` array.
+   * - If `res.exist` is `false`, the user is navigated to the 'registration' route with the email as a query parameter.
+   * - The `showEmailError` and `showLoadingSpinner` flags are set to `false` after handling the response.
    */
   requestSuccess(res: any): void {
     if (res.exist == true) {
       this.router.navigate(['login'], { queryParams: { email: this.data.email } });
+      this.errorService.successMessages = []
+      this.getSuccessMessages(res)
     } else {
       this.router.navigate(['registration'], { queryParams: { email: this.data.email } });
     }
     this.showEmailError = false
     this.showLoadingSpinner = false
+  }
+
+  getSuccessMessages(res: any): void {
+    for (const key in res) {
+      if (typeof res[key] === 'string') {
+        this.errorService.successMessages.push(res[key]);
+      }
+    }
   }
 }
