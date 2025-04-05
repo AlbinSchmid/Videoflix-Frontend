@@ -73,7 +73,6 @@ export class ActivateAccountComponent implements OnInit {
     this.apiService.postData(this.endpoint, data).subscribe({
       next: (res) => {
         this.message = res.message
-        console.log(res);
       },
       error: (err) => {
         this.message = err.error['detail']

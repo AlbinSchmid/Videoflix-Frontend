@@ -2,9 +2,5 @@
     <app-header></app-header>
     <app-form [formType]="'signup'" [signupEmail]="email"></app-form>
     <app-footer></app-footer>
-    @for (error of errorService.errorMessages; track $index) {
-    <app-error-message [ngStyle]="{'margin-bottom.px': $index == 0 ? 0 : $index * 100}" [errorMessage]="error"
-        [errorIndex]="$index"
-        class="app-error-message"></app-error-message>
-    }
+    <app-error-message class="app-error-message"></app-error-message>
 </section>

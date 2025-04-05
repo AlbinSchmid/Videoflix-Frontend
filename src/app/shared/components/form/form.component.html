@@ -1,7 +1,7 @@
 <div class="content">
     @if (formType === 'login') {
     <h1>Log in</h1>
-    <form (ngSubmit)="submitLoginForm(from)" #from="ngForm">
+    <form (ngSubmit)="submitForm(form, loginEndpoint, loginData)" #form="ngForm">
         <label class="label-input">
             <input type="email" class="input-blue" placeholder="Email Address"
                 pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}" required [(ngModel)]="loginData.email"
@@ -10,8 +10,7 @@
             <span *ngIf="emailLogin.value?.length == 0 || !emailLogin.value" class="span-error"><mat-icon
                     fontIcon="warning"></mat-icon>The
                 email address is required.</span>
-            <span *ngIf="emailLogin.value?.length > 0" class="span-error"><mat-icon
-                    fontIcon="warning"></mat-icon>Please
+            <span *ngIf="emailLogin.value?.length > 0" class="span-error"><mat-icon fontIcon="warning"></mat-icon>Please
                 enter a valid email address.</span>
             }
         </label>
@@ -33,7 +32,7 @@
     </div>
     } @else if (formType === 'signup') {
     <h1>Sign Up</h1>
-    <form (ngSubmit)="submitRegistrationForm(from)" #from="ngForm">
+    <form (ngSubmit)="submitForm(form, registrationEndpoint, registrationData, true)" #form="ngForm">
         <label class="label-input">
             <input type="email" class="input-blue" placeholder="Email Address"
                 pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}" required [(ngModel)]="registrationData.email"
@@ -90,31 +89,68 @@
     } @else if (formType === 'forgot-password') {
     <h1>Forgot your password?</h1>
     <p>We will send you an email with instructions to reset your password.</p>
-    <form action="">
+    <form (submit)="submitForm(form, forgotPasswordEndpoint, forgotPasswordData)" #form="ngForm">
         <label class="label-input">
             <input type="email" class="input-blue" placeholder="Email Address"
                 pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}" required
-                [(ngModel)]="forgotPasswordData.email" name="emailInput" #emailInput="ngModel">
+                [(ngModel)]="forgotPasswordData.email" name="emailInput" #emailForgotPassword="ngModel">
+            @if (emailForgotPassword.invalid && emailForgotPassword.touched || showError && emailForgotPassword.invalid)
+            {
+            <span *ngIf="emailForgotPassword.value?.length == 0 || !emailForgotPassword.value"
+                class="span-error"><mat-icon fontIcon="warning"></mat-icon>The
+                email address is required.</span>
+            <span *ngIf="emailForgotPassword.value?.length > 0" class="span-error"><mat-icon
+                    fontIcon="warning"></mat-icon>Please
+                enter a valid email address.</span>
+            }
         </label>
-        <button type="submit" [disabled]="!emailInput.valid" mat-flat-button>Send Email</button>
+        <button type="submit" [disabled]="!emailForgotPassword.valid || showLoadingSpinner" mat-flat-button>
+            <mat-spinner *ngIf="showLoadingSpinner"></mat-spinner>
+            <span *ngIf="!showLoadingSpinner">Send Email</span>
+        </button>
     </form>
     } @else if (formType === 'reset-password') {
     <h1>Reset password</h1>
     <p>Create a new password for your Videoflix account.</p>
-    <form action="">
-        <label class="input-blue password-wrapper">
-            <input type="{{showPassword ? 'text' : 'password'}}" class="input-blue" placeholder="Enter a Password"
-                [(ngModel)]="resetPasswordData.password" name="password">
-            <mat-icon (click)="togglePasswordVisibility('password')"
-                fontIcon="{{ showPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
+    <form (submit)="submitForm(form, resetPasswordEndpoint, resetPasswordData)" #form="ngForm">
+        <label class="label-input">
+            <div class="input-blue password-wrapper">
+                <input type="{{showPassword ? 'text' : 'password'}}" class="input-blue" placeholder="Enter a Password" pattern="^(?!\d+$).+" minlength="8" required
+                    [(ngModel)]="resetPasswordData.password" name="password" #passwordResetPassword="ngModel">
+                <mat-icon (click)="togglePasswordVisibility('password')"
+                    fontIcon="{{ showPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
+            </div>
+            @if (passwordResetPassword.invalid && passwordResetPassword.touched || showError && passwordResetPassword.invalid) {
+            <span *ngIf="passwordResetPassword.value?.length < 8 && passwordResetPassword.value?.length > 0"
+                class="span-error"><mat-icon fontIcon="warning"></mat-icon>The
+                password must be at least 8 characters long.</span>
+            <span *ngIf="passwordResetPassword.value?.length == 0 || !passwordResetPassword.value" class="span-error"><mat-icon
+                    fontIcon="warning"></mat-icon>Please
+                enter a valid password.</span>
+            <span *ngIf="passwordResetPassword.value?.length > 7 && onlyNumbers(passwordResetPassword.value)"
+                class="span-error"><mat-icon fontIcon="warning"></mat-icon> The password must not contain only
+                numbers.</span>
+            }
         </label>
-        <label class="input-blue password-wrapper">
-            <input type="{{showConfirmPassword ? 'text' : 'password'}}" class="input-blue"
-                placeholder="Confirm Password" [(ngModel)]="resetPasswordData.repeated_password" name="confirmPassword">
-            <mat-icon (click)="togglePasswordVisibility('confirm-password')"
-                fontIcon="{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
+        <label class="label-input">
+            <div class="input-blue password-wrapper">
+                <input type="{{showConfirmPassword ? 'text' : 'password'}}" class="input-blue"
+                    placeholder="Confirm Password" [(ngModel)]="resetPasswordData.repeated_password" required minlength="8" #repeatedPasswordResetPassword="ngModel"
+                    name="confirmPassword">
+                <mat-icon (click)="togglePasswordVisibility('confirm-password')"
+                    fontIcon="{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
+            </div>
+            @if (repeatedPasswordResetPassword.value != passwordResetPassword.value && repeatedPasswordResetPassword.touched ||
+            showError && !repeatedPasswordResetPassword.value || repeatedPasswordResetPassword.touched &&
+            !repeatedPasswordResetPassword.value) {
+            <span *ngIf="repeatedPasswordResetPassword.value != passwordResetPassword.value || !repeatedPasswordResetPassword.value"
+                class="span-error"><mat-icon fontIcon="warning"></mat-icon>Passwords must match.</span>
+            }
         </label>
-        <button type="submit" mat-flat-button [disabled]="checkPasswords()">Get Started</button>
+        <button type="submit" mat-flat-button [disabled]="checkResetPasswords() || form.invalid || showLoadingSpinner">
+            <mat-spinner *ngIf="showLoadingSpinner"></mat-spinner>
+            <span *ngIf="!showLoadingSpinner">Get Started</span>
+        </button>
     </form>
     }
 </div>

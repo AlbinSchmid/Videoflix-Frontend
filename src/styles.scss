@@ -124,8 +124,10 @@ a {
 
 .app-error-message {
     position: absolute;
-    bottom: 50px;
-    left: 50px;
+    bottom: 25px;
+    left: 25px;
+    height: 80px;
+    width: 540px;
     animation: left-to-right 250ms ease-in-out;
 
     @keyframes left-to-right {
