@@ -8,8 +8,20 @@ header {
         height: 32px;
     }
 
+
     .login-btn {
         @include font-style($fw: 600);    
         padding: 22px;
+        
+        span {
+            @include flex-position();
+            gap: 6px;
+        }
+    }
+
+    mat-icon {
+        @include flex-position();
+        margin-top: 1px;
+        font-size: 24px;
     }
 }

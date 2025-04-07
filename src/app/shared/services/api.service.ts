@@ -20,4 +20,8 @@ export class ApiService {
   postData(endpoint: string, data: object): Observable<any> {
     return this.http.post(this.API_BASE_URL + endpoint, data);
   }
+
+  getData(endpoint: string): Observable<any> {
+    return this.http.get(this.API_BASE_URL + endpoint);
+  }
 }

@@ -1,0 +1,37 @@
+@use './../../styles.scss' as *;
+
+
+section {
+    background-color: black;
+}
+
+.preview {
+    @include flex-position($fd: column, $jc: center, $ai: flex-start);
+    gap: 32px;
+    margin-top: 40px;
+
+    h1 {
+        @include font-style($fs: 88px, $fw: 700);
+    }
+
+    p {
+        @include font-style($fs: 16px);
+        text-align: start;
+        max-width: 500px;
+    }
+
+
+    button {
+        span {
+            @include font-style($fs: 18px);
+            @include flex-position();
+            gap: 8px;
+        }
+
+        mat-icon {
+            @include flex-position();
+            width: 16px;
+            height: 18px;
+        }
+    }
+}

@@ -1,6 +1,11 @@
 <header>
-    <a href="#">
+    <a href="#" *ngIf="!browse">
         <img src="/img/logo.png" alt="videoflix-logo">
     </a>
-    <a *ngIf="!login" class="login-btn" mat-flat-button href="login">Log in</a>
+    <a *ngIf="!login && !browse" class="login-btn" mat-flat-button href="login">Log in</a>
+
+    <a href="#" *ngIf="browse">
+        <img src="/img/logo-small.png" alt="videoflix-logo" [ngStyle]="{'height.px': 48}">
+    </a>
+    <a *ngIf="browse" class="login-btn" mat-flat-button href="login"><span><mat-icon fontIcon="logout"></mat-icon>Log out</span></a>
 </header>
