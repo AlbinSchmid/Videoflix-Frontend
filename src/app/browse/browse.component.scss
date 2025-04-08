@@ -35,3 +35,7 @@ section {
         }
     }
 }
+
+app-category {
+    @include flex-position($jc: flex-start, $ai: flex-start);
+}

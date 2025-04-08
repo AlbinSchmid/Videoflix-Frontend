@@ -1,0 +1,32 @@
+@use './../../../styles.scss' as *;
+
+h3 {
+    @include font-style($fs: 28px, $fw: 700);
+    margin-bottom: 12px;
+}
+
+.movies-div {
+    @include flex-position($jc: flex-start, $ai: center);
+    gap: 12px;
+}
+
+.movie-cover-div {
+    max-width: 250px;
+    border-radius: 4px;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+
+    img {
+        width: 100%;
+        border-radius: 4px;
+    }
+
+    &:hover {
+        transition: transform 300ms ease-out;
+    }
+
+}
+
+.leave-transition {
+    transition: transform 300ms ease-out;
+}

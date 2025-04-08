@@ -1,0 +1,11 @@
+<div>
+    <h3>{{ firstLetterBig(category.genre)}}</h3>
+    <div class="movies-div">
+        @for (movie of category.movies; track $index) {
+            <div (mousemove)="onMouseMove($event)" (mouseleave)="onMouseLeave($event)" class="movie-cover-div" #movieCard>
+                <img src="{{ movie.movie_cover }}" alt="movie-cover">
+            </div>
+            <!-- <video src="{{ movie.video_file }}"></video> -->
+        }
+    </div>
+</div>
