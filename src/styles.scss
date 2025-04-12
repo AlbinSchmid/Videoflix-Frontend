@@ -24,6 +24,11 @@ $color-blue: #2E3EDF;
 :root {
     @include mat.button-overrides((filled-container-color: $color-blue));
     @include mat.progress-spinner-overrides((active-indicator-color: white));
+    @include mat.dialog-overrides((container-color: '#181818'));
+}
+
+::ng-deep .mat-mdc-dialog-surface {
+    border-radius: 4px !important;
 }
 
 html,

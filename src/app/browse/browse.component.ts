@@ -47,6 +47,7 @@ export class BrowseComponent {
   sendGetRequest() {
     this.apiService.getData(this.moviesEndpoint).subscribe(
       (response) => {
+        console.log('GET request successful:', response);
         this.movieSections = Object.entries(response as { [genre: string]: any[] })
           .filter(([_, movies]) => movies.length > 0)
           .map(([genre, movies]) => ({ genre, movies }));

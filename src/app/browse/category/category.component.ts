@@ -1,5 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, inject, Input, Renderer2, ViewChild } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import Hls from 'hls.js';
+import { MovieDetailComponent } from '../movie-detail/movie-detail.component';
 
 @Component({
   selector: 'app-category',
@@ -7,18 +10,52 @@ import { Component, ElementRef, inject, Input, Renderer2, ViewChild } from '@ang
     CommonModule
   ],
   templateUrl: './category.component.html',
-  styleUrl: './category.component.scss'
+  styleUrl: './category.component.scss',
+  host: { 'ngSkipHydration': '' }
 })
 export class CategoryComponent {
+  dialog = inject(MatDialog);
   el = inject(ElementRef);
   renderer = inject(Renderer2);
   @Input() category: any;
-  @ViewChild('movieCard') movieCard!: ElementRef;
   rotateX = 0;
   rotateY = 0;
 
   effectIntensity = 8;
   private animationFrameId: number | null = null;
+
+
+  @ViewChild('videoRef', { static: true }) videoElementRef!: ElementRef<HTMLVideoElement>;
+  hls?: Hls;
+  src = 'http://localhost:8000/media/movies/das-ein-test-aaa/master.m3u8'
+
+  ngAfterViewInit(): void {
+    if (this.videoElementRef) {
+      const video = this.videoElementRef.nativeElement;
+
+      if (Hls.isSupported()) {
+        this.hls = new Hls();
+        this.hls.loadSource(this.src);
+        this.hls.attachMedia(video);
+      } else if (video.canPlayType && video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = this.src; // fallback für Safari
+      }
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.hls?.destroy();
+  }
+
+  openMovieDetail(movie: object): void {
+    console.log(movie);
+    this.dialog.open(MovieDetailComponent, {
+      data: {
+        movie: movie,
+      },
+    });
+  }
+
 
   /**
    * Handles the mouse move event on a card element.
@@ -79,10 +116,6 @@ export class CategoryComponent {
     card.classList.add('leave-transition');
     const resetTransform = 'perspective(500px) rotateX(0deg) rotateY(0deg) scale(1)';
     this.renderer.setStyle(card, 'transform', resetTransform);
-  }
-
-  ngOnInit() {
-    console.log(this.category.movies[0].movie_cover);
   }
 
   firstLetterBig(categoryName: string): string {
