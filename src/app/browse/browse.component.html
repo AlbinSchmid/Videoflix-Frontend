@@ -1,11 +1,22 @@
 <section>
-    <app-header [browse]="true"></app-header>
+    <div class="background-video-div">
+        <video #backgroundMovie width="100%" autoplay playsinline height="auto"></video>
+        <div class="overlay-div"></div>
+    </div>
     <div class="preview">
-        <h1>{{ randomMovie.title }}</h1>
-        <p>{{ randomMovie.description }}</p>
-        <button mat-flat-button><span><mat-icon fontIcon="play_arrow"></mat-icon>Play</span></button>
+        <app-header [browse]="true"></app-header>
+        <div class="info-div">
+            <div class="info-div-content">
+                <h1>{{ randomMovie.title }}</h1>
+                <p>{{ randomMovie.description }}</p>
+                <button mat-flat-button (click)="navigateToWatchComponent()"><span><mat-icon fontIcon="play_arrow"></mat-icon>Play</span></button>
+            </div>
+            <div>
+                <mat-icon *ngIf="video" class="sound-icon" fontIcon="{{video.muted ? 'volume_off' : 'volume_up'}}" (click)="toggleSoundOfMovie()"></mat-icon>
+            </div>
+        </div>
     </div>
     @for (category of movieSections; track $index) {
-        <app-category [ngStyle]="{'margin-top.px': $index == 0 ? 50 : 50}" [category]="category"></app-category>
+    <app-category [ngStyle]="{'margin-top.px': $index == 0 ? 35 : 50}" [category]="category"></app-category>
     }
 </section>

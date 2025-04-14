@@ -24,4 +24,8 @@ export class ApiService {
   getData(endpoint: string): Observable<any> {
     return this.http.get(this.API_BASE_URL + endpoint);
   }
+
+  getDataWithSlug(endpoint: string, slug: string): Observable<any> {
+    return this.http.get(this.API_BASE_URL + endpoint + slug);
+  }
 }

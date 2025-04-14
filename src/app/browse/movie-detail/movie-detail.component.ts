@@ -16,7 +16,7 @@ import Hls from 'hls.js';
   templateUrl: './movie-detail.component.html',
   styleUrl: './movie-detail.component.scss'
 })
-export class MovieDetailComponent {
+export class MovieDetailComponent{
   dialogRef = inject(MatDialogRef<MovieDetailComponent>);
   data = inject(MAT_DIALOG_DATA);
   cdr = inject(ChangeDetectorRef);

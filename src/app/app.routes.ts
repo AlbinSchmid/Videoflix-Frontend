@@ -6,6 +6,7 @@ import { ForgotPasswordComponent } from './forgot-password/forgot-password.compo
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
 import { ActivateAccountComponent } from './activate-account/activate-account.component';
 import { BrowseComponent } from './browse/browse.component';
+import { WatchMovieComponent } from './watch-movie/watch-movie.component';
 
 export const routes: Routes = [
     {path: '', component: LandingPageComponent},
@@ -15,4 +16,5 @@ export const routes: Routes = [
     {path: 'reset-password/:uid/:token', component: ResetPasswordComponent},
     {path: 'activate/:uid/:token', component: ActivateAccountComponent},
     {path: 'browse', component: BrowseComponent},
+    {path: 'browse/watch/:slug', component: WatchMovieComponent},
 ];

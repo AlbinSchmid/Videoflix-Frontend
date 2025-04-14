@@ -49,8 +49,8 @@ body {
 }
 
 section {
-    height: 100vh;
-    width: 100vw;
+    min-height: 100vh;
+    width: 100%;
     padding: 40px 96px;
 }
 
@@ -144,6 +144,7 @@ a {
         0% {
             transform: translateX(-100%);
         }
+
         100% {
             transform: translateX(0);
         }
@@ -155,7 +156,8 @@ mat-icon {
     font-family: 'Material Icons' !important;
 }
 
-app-header, app-footer {
+app-header,
+app-footer {
     @include flex-position();
     width: 100%;
 }
@@ -230,4 +232,73 @@ app-header, app-footer {
     font-style: normal;
     font-weight: 900;
     src: url('../public/fonts/dm-sans-v15-latin-900.woff2') format('woff2');
+}
+
+
+
+// gesamte bar
+.video-js .vjs-control-bar {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center;
+    height: 200px !important;
+    padding: 0 !important;
+    background-color: transparent !important;
+    background-size: 100% 100%;
+    background-position: 0px 0px;
+    background-image: linear-gradient(0deg, #000000FF 2%, #00000000 99%);
+}
+
+.video-js .vjs-control {
+    font-size: 20px !important;
+    width: 60px;
+    margin-top: 70px;
+    /* Icons und Text größer */
+}
+
+.video-js .vjs-progress-control {
+    margin-top: 131px !important;
+}
+
+.video-js .vjs-time-control {
+    width: auto !important;
+}
+
+.vjs-modal-dialog .vjs-modal-dialog-content,
+.video-js .vjs-modal-dialog,
+.vjs-button>.vjs-icon-placeholder:before,
+.video-js .vjs-big-play-button .vjs-icon-placeholder:before {
+    position: static !important;
+}
+
+/* Fortschrittslinie (rot) */
+.video-js .vjs-play-progress {
+    background-color: $color-blue !important;
+}
+
+.video-js .vjs-play-progress::before {
+    color: $color-blue !important;
+  }
+
+.video-js .vjs-volume-bar {
+    margin-top: -43px !important;
+}
+
+.video-js .vjs-mute-control {
+    margin-top: 0px !important;
+}
+
+.video-js .vjs-fullscreen-control, .video-js .vjs-picture-in-picture-control, .video-js .vjs-control, .video-js .vjs-volume-panel, .video-js .vjs-control  {
+    height: 0;
+}
+
+/* Ladebalken (grau) */
+.video-js .vjs-load-progress {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Optional: Steuerleiste bleibt unten */
+.video-js .vjs-control-bar {
+    z-index: 10;
+    padding-top: 10px;
 }
