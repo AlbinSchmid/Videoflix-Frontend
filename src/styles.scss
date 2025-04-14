@@ -31,6 +31,11 @@ $color-blue: #2E3EDF;
     border-radius: 4px !important;
 }
 
+::ng-deep .cdk-overlay-pane.mat-mdc-dialog-panel {
+    max-width: none !important;
+    max-height: none !important;
+}
+
 html,
 body {
     height: 100%;

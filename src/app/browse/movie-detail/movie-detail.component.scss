@@ -1,7 +1,141 @@
+@use './../../../styles.scss' as *;
 
+.background {
+    height: 800px;
+    width: 1000px;
+    background-color: #181818;
+}
 
 .movie-preview {
+    position: relative;
     background-position: center;
-    height: 100px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    height: 500px;
     width: 100%;
+
+    .overlay-div {
+        @include flex-position($fd: column, $jc: flex-end, $ai: flex-start);
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 2;
+        padding: 32px 40px;
+        background-size: 100% 100%;
+        background-position: 0px 0px;
+        background-image: linear-gradient(0deg, #181818FF 3%, #00000000 34%);
+
+        h2 {
+            @include font-style($fs: 40px, $fw: 700);
+            margin-bottom: 12px;
+        }
+
+        .bottom-div {
+            position: relative;
+            width: 100%;
+            @include flex-position($jc: space-between);
+        }
+
+        .detail-icon {
+            @include flex-position();
+            cursor: pointer;
+            position: absolute;
+            color: white;
+            border-radius: 100%;
+        }
+
+        .close-icon {
+            background-color: black;
+            right: 20px;
+            top: 20px;
+            width: 35px;
+            height: 35px;
+            opacity: 1;
+        }
+
+        .sound-icon {
+            right: 0;
+            width: 55px;
+            height: 55px;
+            opacity: 0.5;
+            transition: opacity 0.3s ease-in-out;
+            border: 2px solid white;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+    }
+
+    .background-video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        pointer-events: none;
+        border: none;
+    }
+
+
+}
+
+button {
+    width: 160px;
+    height: 45px;
+
+    span {
+        @include font-style($fs: 24px);
+        @include flex-position();
+        gap: 14px;
+    }
+
+    mat-icon {
+        @include flex-position();
+        width: 16px;
+        height: 18px;
+    }
+}
+
+.movie-details {
+    @include flex-position($fd: column, $jc: flex-start, $ai: flex-start);
+    padding: 0 40px;
+    margin-top: 20px;
+    gap: 20px;
+    width: 100%;
+    background-color: #181818;
+    color: white;
+
+    .details {
+        @include flex-position($jc: flex-start, $ai: center);
+        gap: 12px;
+    }
+
+    .description {
+        @include font-style($fs: 16px, $fw: 400);
+        text-align: start;
+    }
+}
+
+.license {
+    @include flex-position($fd: column, $jc: center, $ai: flex-start);
+    gap: 12px;
+
+    p {
+        @include font-style($fs: 16px, $fw: 400);
+        text-align: start;
+
+        mark {
+            background-color: transparent;
+            opacity: 0.5;
+        }
+
+        a {
+            color: lightskyblue;
+            text-decoration: underline;
+        }
+    }
 }
