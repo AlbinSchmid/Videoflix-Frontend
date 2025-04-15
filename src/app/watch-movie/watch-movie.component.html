@@ -1,4 +1,9 @@
-<div class="video-js-container">
+<div class="video-js-container background-div">
     <video #movie class="video-js vjs-default-skin" controls autoplay muted playsinline preload="auto" width="100%"
         height="auto"></video>
+    <div #videoHeader class="video-header">
+        <a href="/browse"><mat-icon fontIcon="arrow_back"></mat-icon></a>
+        <h3>{{ h3 }}</h3>
+        <a href="/browse"><img src="/img/logo-small.png" alt="videoflix-logo"></a>
+    </div>
 </div>

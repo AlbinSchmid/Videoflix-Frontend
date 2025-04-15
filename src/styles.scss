@@ -284,6 +284,10 @@ app-footer {
     margin-top: -43px !important;
 }
 
+.video-js .vjs-time-tooltip, .video-js .vjs-volume-horizontal .vjs-mouse-display {
+    margin-top: 25px !important;
+}
+
 .video-js .vjs-mute-control {
     margin-top: 0px !important;
 }
@@ -301,4 +305,9 @@ app-footer {
 .video-js .vjs-control-bar {
     z-index: 10;
     padding-top: 10px;
+}
+
+.vjs-fluid:not(.vjs-audio-only-mode) {
+    padding-top: 0 !important;
+    height: 100% !important;
 }

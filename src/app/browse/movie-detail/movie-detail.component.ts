@@ -3,8 +3,8 @@ import { Component, ElementRef, inject, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
-import { ChangeDetectorRef } from '@angular/core';
-import Hls from 'hls.js';
+import { Router } from '@angular/router';
+import { BrowseService } from '../../shared/services/browse.service';
 
 @Component({
   selector: 'app-movie-detail',
@@ -16,15 +16,15 @@ import Hls from 'hls.js';
   templateUrl: './movie-detail.component.html',
   styleUrl: './movie-detail.component.scss'
 })
-export class MovieDetailComponent{
+export class MovieDetailComponent {
+  browseService = inject(BrowseService);
   dialogRef = inject(MatDialogRef<MovieDetailComponent>);
+  router = inject(Router);
   data = inject(MAT_DIALOG_DATA);
-  cdr = inject(ChangeDetectorRef);
-  hls?: Hls;
 
   @ViewChild('videoRef', { static: true }) videoElementRef!: ElementRef<HTMLVideoElement>;
-  
-  video: any = null;
+
+  video: HTMLVideoElement | undefined;
   movieDuration: string = '';
 
   /**
@@ -43,33 +43,29 @@ export class MovieDetailComponent{
    * will not be executed.
    */
   ngAfterViewInit(): void {
-    let movie_url = this.data.movie.hls_url;
-    if (this.videoElementRef) {
-      this.video = this.videoElementRef.nativeElement;
-      this.video.muted = false;
-      this.cdr.detectChanges();
-      this.laodMovieAndPlayWhenHlsReady(movie_url);
-    }
+    setTimeout(() => {
+      this.getVideoElementAndMovieHlsUrl();
+    });
   }
 
   /**
-   * Loads a movie from the given URL and prepares it for playback using HLS (HTTP Live Streaming).
-   * If HLS is supported, it initializes an HLS instance, loads the source, and attaches it to the video element.
-   * If HLS is not supported but the browser can play HLS natively (e.g., Safari), it sets the video source directly.
-   * 
-   * @param movie_url - The URL of the movie to be loaded and played.
+   * Retrieves the video element from the template and the HLS URL of the movie.
+   * It then loads the HLS stream and plays the video when it's ready.
+   * Additionally, it sets up an event listener to format the video's duration
+   * once the metadata is loaded.
+   *
+   * @remarks
+   * This method uses the `browseService` to load the HLS stream and play it.
+   * The `videoElementRef` is used to access the video element in the DOM.
    */
-  laodMovieAndPlayWhenHlsReady(movie_url: string): void {
-    if (Hls.isSupported()) {
-      this.hls?.destroy();
-      this.hls = new Hls();
-      this.hls.loadSource(movie_url);
-      this.hls.attachMedia(this.video);
+  getVideoElementAndMovieHlsUrl(): void {
+    if (this.videoElementRef) {
+      let movieHlsUrl = this.data.movie.hls_url;
+      this.video = this.videoElementRef.nativeElement;
+      this.browseService.loadHlsAndPlayWhenReady(this.video, movieHlsUrl, false);
       this.video.addEventListener('loadedmetadata', () => {
-        this.formatDuration(this.video.duration);
+        if (this.video) this.formatDuration(this.video.duration);
       });
-    } else if (this.video.canPlayType && this.video.canPlayType('application/vnd.apple.mpegurl')) {
-      this.video.src = movie_url;
     }
   }
 
@@ -104,7 +100,7 @@ export class MovieDetailComponent{
    * Cleans up resources by destroying the HLS instance if it exists.
    */
   ngOnDestroy(): void {
-    this.hls?.destroy();
+    if (this.video) this.browseService.destroyHls(this.video);
   }
 
   /**
@@ -112,7 +108,7 @@ export class MovieDetailComponent{
    * If the video is currently muted, this method will unmute it, and vice versa.
    */
   toggleSoundOfMovie(): void {
-    this.video.muted = !this.video.muted;
+    if (this.video) this.video.muted = !this.video.muted;
   }
 
   /**
@@ -122,5 +118,16 @@ export class MovieDetailComponent{
    */
   closeMovieDetail(): void {
     this.dialogRef.close();
+  }
+
+  /**
+   * Navigates to the watch component for the selected movie.
+   * This method first closes the movie detail view and then
+   * uses the Angular Router to navigate to the watch component,
+   * passing the movie's slug as a route parameter.
+   */
+  navigateToWatchComponent(): void {
+    this.closeMovieDetail();
+    this.router.navigate(['/browse/watch', this.data.movie.slug]);
   }
 }

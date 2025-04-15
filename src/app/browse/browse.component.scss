@@ -1,6 +1,5 @@
 @use './../../styles.scss' as *;
 
-
 section {
     background-color: black;
 }
@@ -40,7 +39,6 @@ section {
     gap: 360px;
     max-width: 100%;
     z-index: 2;
-
 
     .info-div {
         @include flex-position($jc: space-between, $ai: flex-end);

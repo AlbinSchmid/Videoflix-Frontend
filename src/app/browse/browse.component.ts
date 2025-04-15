@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, inject, ViewChild } from '@angular/core';
+import { Component, ElementRef, inject, ViewChild } from '@angular/core';
 import { HeaderComponent } from '../shared/components/header/header.component';
 import { ApiService } from '../shared/services/api.service';
 import { MatButtonModule } from '@angular/material/button';
@@ -6,9 +6,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { CategoryComponent } from './category/category.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { isPlatformBrowser } from '@angular/common';
-import { PLATFORM_ID, Inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { BrowseService } from '../shared/services/browse.service';
 import Hls from 'hls.js';
 
 @Component({
@@ -26,73 +25,49 @@ import Hls from 'hls.js';
   styleUrl: './browse.component.scss'
 })
 export class BrowseComponent {
-  router = inject(Router)
+  router = inject(Router);
+  browseService = inject(BrowseService);
   apiService = inject(ApiService);
-  cdr = inject(ChangeDetectorRef);
 
-  @ViewChild('backgroundMovie', { static: true }) backgroundMovie!: ElementRef<HTMLVideoElement>;
-  
+  @ViewChild('backgroundMovie', { static: true }) backgroundMovieRef!: ElementRef<HTMLVideoElement>;
+
   hls?: Hls;
+
+  movieSections: { genre: string; movies: any[] }[] = [];
+  randomMovie: any = {};
   
   moviesEndpoint: string = 'movies/';
-
-  movieSections: any[] = [];
-  randomMovie: any = {};
-
-  video: any = null;
-
-
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) { }
+  video: HTMLVideoElement | undefined;
 
   /**
-   * Lifecycle hook that is called after Angular has fully initialized
-   * the component's view. This method performs the following actions:
+   * Lifecycle hook that is called after Angular has fully initialized the component's view.
+   * This method sets a timeout to perform two actions:
+   * 1. Sends a GET request by invoking the `sendGetRequest` method.
+   * 2. Retrieves the video element and initializes the movie's HLS (HTTP Live Streaming) URL
+   *    by calling the `getVideoElementAndMovieHlsUrl` method with the `hls_url` of the random movie.
    * 
-   * - Sends an HTTP GET request by invoking `sendGetRequest()`.
-   * - Retrieves a random movie by calling `getRandomMovie()`.
-   * - If a random movie is available and the platform is a browser:
-   *   - Initializes the `video` element with the `backgroundMovie` reference.
-   *   - Mutes the video element.
-   *   - Triggers change detection to ensure the view is updated.
-   *   - Loads the movie and plays it when the HLS (HTTP Live Streaming) source is ready.
-   * 
-   * @remarks
-   * This method relies on the `randomMovie` object to provide the HLS URL
-   * and assumes that the `backgroundMovie` is a valid `ElementRef` pointing
-   * to a video element in the DOM.
-   * 
-   * @throws Will throw an error if `randomMovie` or `backgroundMovie` is undefined.
+   * Note: The use of `setTimeout` ensures these actions are executed after the view initialization
+   *       is complete, allowing any necessary DOM elements to be available.
    */
-  ngAfterViewInit() {
-    this.sendGetRequest();
-    this.getRandomMovie();
-    console.log(this.movieSections)
-
-    let movie_url = this.randomMovie.hls_url;
-    if (this.backgroundMovie && isPlatformBrowser(this.platformId)) {
-      this.video = this.backgroundMovie.nativeElement;
-      this.video.muted = true;
-      this.cdr.detectChanges();
-      this.laodMovieAndPlayWhenHlsReady(movie_url);
-    }
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.sendGetRequest();
+      this.getVideoElementAndMovieHlsUrl();
+    });
   }
 
   /**
-   * Loads a movie from the given URL and prepares it for playback using HLS (HTTP Live Streaming).
-   * If HLS is supported, it initializes an HLS instance, loads the source, and attaches it to the video element.
-   * If HLS is not supported but the browser can play HLS natively (e.g., Safari), it sets the video source directly.
-   * 
-   * @param movie_url - The URL of the movie to be loaded and played.
+   * Retrieves the video element from the background movie reference and loads the provided HLS URL for playback.
+   * If the `backgroundMovieRef` is defined, it assigns the native video element to the `video` property
+   * and uses the `browseService` to load and play the HLS stream when ready.
+   *
+   * @param movieHlsUrl - The URL of the HLS stream to be loaded and played.
    */
-  laodMovieAndPlayWhenHlsReady(movie_url: string): void {
-    if (Hls.isSupported() && isPlatformBrowser(this.platformId)) {
-      this.hls?.destroy();
-      this.hls = new Hls();
-
-      this.hls.loadSource(movie_url);
-      this.hls.attachMedia(this.video);
-    } else if (this.video.canPlayType && this.video.canPlayType('application/vnd.apple.mpegurl')) {
-      this.video.src = movie_url;
+  getVideoElementAndMovieHlsUrl(): void {
+    if (this.backgroundMovieRef) {
+      let movieHlsUrl = this.randomMovie.hls_url;
+      this.video = this.backgroundMovieRef.nativeElement;
+      this.browseService.loadHlsAndPlayWhenReady(this.video, movieHlsUrl, true);
     }
   }
 
@@ -101,7 +76,7 @@ export class BrowseComponent {
  * Cleans up resources by destroying the HLS instance if it exists.
  */
   ngOnDestroy(): void {
-    this.hls?.destroy();
+    if (this.video) this.browseService.destroyHls(this.video);
   }
 
   /**
@@ -129,31 +104,20 @@ export class BrowseComponent {
   }
 
   /**
-   * Sends a GET request to fetch movie data from the specified endpoint.
-   * The response is processed to extract movie sections grouped by genre,
-   * filtering out genres with no movies. The processed data is stored in
-   * the `movieSections` property.
+   * Sends a GET request to fetch movie data from the specified endpoint and processes the response.
+   * The response is transformed into an array of movie sections, each containing a genre and its associated movies.
+   * Filters out genres with no movies and maps the remaining data into a structured format.
+   * Additionally, triggers the retrieval of a random movie.
    *
-   * @remarks
-   * - The `apiService.getData` method is used to perform the GET request.
-   * - The response is expected to be an object where keys are genres and
-   *   values are arrays of movies.
-   * - Genres with empty movie arrays are excluded from the result.
-   *
-   * @throws
-   * Logs an error to the console if the GET request fails.
+   * @returns {void} This method does not return a value.
    */
-  sendGetRequest() {
-    this.apiService.getData(this.moviesEndpoint).subscribe(
-      (response) => {
-        this.movieSections = Object.entries(response as { [genre: string]: any[] })
-          .filter(([_, movies]) => movies.length > 0)
-          .map(([genre, movies]) => ({ genre, movies }));
-      },
-      (error) => {
-        console.error('GET request failed:', error);
-      }
-    )
+  sendGetRequest(): void {
+    this.apiService.getData(this.moviesEndpoint).subscribe((response) => {
+      this.movieSections = Object.entries(response as { [genre: string]: any[] })
+        .filter(([_, movies]) => movies.length > 0)
+        .map(([genre, movies]) => ({ genre, movies }));
+    });
+    this.getRandomMovie();
   }
 
   /**
@@ -161,7 +125,7 @@ export class BrowseComponent {
   * If the video is currently muted, this method will unmute it, and vice versa.
   */
   toggleSoundOfMovie(): void {
-    this.video.muted = !this.video.muted;
+    if (this.video) this.video.muted = !this.video.muted;
   }
 
   /**

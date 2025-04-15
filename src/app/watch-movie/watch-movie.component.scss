@@ -1,5 +1,8 @@
-div {
-    height: 100vh;
+@use './../../styles.scss' as *;
+
+.background-div {
+    height: 100dvh;
+    max-height: 100dvh;
     width: 100vw;
     overflow: hidden;
 }
@@ -7,4 +10,45 @@ div {
 video {
     width: 100%;
     height: 100%;
+}
+
+.video-header {
+    @include flex-position($jc: space-between, $ai: center);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    background-size: 100% 100%;
+    background-position: 0px 0px;
+    background-image: linear-gradient(180deg, #000000FF 1%, #00000000 100%);
+    padding: 32px;
+    transition: opacity 0.5s ease;
+    opacity: 1;
+
+    mat-icon {
+        cursor: pointer;
+        @include font-style($fs: 48px);
+        height: 50px;
+        width: 50px;
+    }
+
+    h3 {
+        @include font-style($fs: 28px, $fw: 300);
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    img {
+        cursor: pointer;
+        width: 48px;
+    }
+}
+
+::ng-deep .video-js.vjs-user-inactive+.video-header {
+    opacity: 0;
+    pointer-events: none;
+}
+
+::ng-deep .video-js.vjs-user-active+.video-header {
+    opacity: 1;
 }

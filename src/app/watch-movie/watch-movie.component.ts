@@ -1,10 +1,13 @@
-import { isPlatformBrowser } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ChangeDetectorRef, Component, ElementRef, inject, Inject, PLATFORM_ID, ViewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../shared/services/api.service';
+import { MatIconModule } from '@angular/material/icon';
+import videojs, { VideoJsPlayer } from 'video.js';
 import Hls from 'hls.js';
 import 'videojs-thumbnails';
-import videojs, { VideoJsPlayer } from 'video.js';
+import { BrowseService } from '../shared/services/browse.service';
+
 
 declare module 'video.js' {
   interface VideoJsPlayer {
@@ -14,61 +17,169 @@ declare module 'video.js' {
 
 @Component({
   selector: 'app-watch-movie',
-  imports: [],
+  imports: [
+    MatIconModule,
+    CommonModule
+  ],
   templateUrl: './watch-movie.component.html',
   styleUrl: './watch-movie.component.scss'
 })
 export class WatchMovieComponent {
+  browseService = inject(BrowseService);
   apiService = inject(ApiService);
+  routerNavigation = inject(Router);
   router = inject(ActivatedRoute);
   cdr = inject(ChangeDetectorRef);
 
-  player!: VideoJsPlayer;
+  player!: any;
 
   @ViewChild('movie', { static: false }) movieRef!: ElementRef<HTMLVideoElement>;
+  @ViewChild('videoHeader', { static: true }) headerRef!: ElementRef<HTMLElement>;
 
   hls?: Hls;
 
-
   video: any = null;
-
   movieEndpoint: string = 'movies/';
-
   movie: any = {};
+  h3: string = ''
 
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) { }
 
   /**
-   * Lifecycle hook that is called after the component is initialized.
-   * This method checks if the code is running in a browser environment
-   * and retrieves the 'slug' parameter from the route's snapshot.
-   * It then sends a GET request using the retrieved slug.
+   * Lifecycle hook that is called after Angular has fully initialized the component's view.
+   * 
+   * This method performs the following actions:
+   * - Uses a `setTimeout` to defer execution until the next JavaScript event loop cycle.
+   * - Checks if the code is running in a browser environment using `isPlatformBrowser`.
+   * - Retrieves the 'slug' parameter from the route's snapshot and sends a GET request using `sendGetRequest`.
+   * - Initializes the Video.js player by calling `getVideoJsPLayerReady`.
+   * 
+   * Note: The `setTimeout` ensures that the operations are executed after the view is fully rendered.
    */
-  ngOnInit() {
-    if (isPlatformBrowser(this.platformId)) {
-      const slug = this.router.snapshot.paramMap.get('slug');
-      this.sendGetRequest(slug);
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      if (isPlatformBrowser(this.platformId)) {
+        const slug = this.router.snapshot.paramMap.get('slug');
+        this.sendGetRequest(slug);
+      }
+      this.getVideoJsPLayerReady();
+    });
+  }
+
+  /**
+   * Retrieves the video element and the movie's HLS (HTTP Live Streaming) URL,
+   * then initializes the video player with the specified settings and starts
+   * loading and playing the video.
+   *
+   * @remarks
+   * - Ensures the video element is obtained from the `movieRef` property.
+   * - Configures the player's volume and mute settings.
+   * - Delegates the loading and playback of the HLS stream to the `browseService`.
+   *
+   * @throws
+   * This method assumes that `this.movieRef` and `this.movie.hls_url` are defined.
+   * If `this.movieRef` is null or undefined, the method will not execute properly.
+   */
+  getVideoElementAndMovieHlsUrl(): void {
+    if (this.movieRef) {
+      this.player.muted(false);
+      this.player.volume(1);
+      let movieHlsUrl = this.movie.hls_url;
+      this.video = this.movieRef.nativeElement;
+      setTimeout(() => {
+        this.browseService.loadHlsAndPlayWhenReady(this.video, movieHlsUrl, false);
+      });
     }
   }
 
-  ngAfterViewInit(): void {
+  /**
+   * Initializes the Video.js player when the platform is a browser.
+   * This method sets up the Video.js player instance, configures it, and attaches
+   * event handlers for additional functionality such as modifying the header
+   * in the fullscreen container and changing the header's opacity based on user activity.
+   *
+   * @returns {void}
+   */
+  getVideoJsPLayerReady(): void {
     if (isPlatformBrowser(this.platformId)) {
-      this.player = videojs(this.movieRef.nativeElement, {
-        controls: true,
-        autoplay: true,
-        muted: true,
-        fluid: true
-      }) as VideoJsPlayer;
-
-      // (this.player as any).ready(() => {
-      //   (this.player as any).thumbnails({
-      //     0: {src: 'assets/thumbs/0000.jpg'},
-      //     10: {src: 'assets/thumbs/0010.jpg'},
-      //     20: {src: 'assets/thumbs/0020.jpg'},
-      //   });
-      // });
+      this.setVideoJsPlayer();
+      this.player = videojs(this.movieRef.nativeElement) as any;
+      this.player.ready(() => {
+        this.putHeaderOfVideoInFullscreenContainer();
+        this.changeHeaderOpacityOnUserActivity();
+      });
     }
+  }
+
+  /**
+   * Initializes the Video.js player instance with the specified configuration.
+   * The player is attached to the native HTML element referenced by `movieRef`.
+   * 
+   * Configuration options:
+   * - `controls`: Enables player controls.
+   * - `autoplay`: Automatically starts playback when the player is ready.
+   * - `muted`: Starts playback with the audio muted.
+   * - `fluid`: Makes the player responsive to the container's size.
+   * 
+   * @returns void
+   */
+  setVideoJsPlayer(): void {
+    this.player = videojs(this.movieRef.nativeElement, {
+      controls: true,
+      autoplay: true,
+      muted: true,
+      fluid: true
+    }) as VideoJsPlayer;
+  }
+
+  /**
+   * Moves the header element into the fullscreen container when the video player enters fullscreen mode,
+   * and restores it to the original container when exiting fullscreen mode.
+   *
+   * This method listens for the `fullscreenchange` event on the video player and dynamically appends
+   * the header element to the appropriate container based on the fullscreen state.
+   *
+   * @remarks
+   * - The header element is referenced using `this.headerRef.nativeElement`.
+   * - The fullscreen container is identified by the `.vjs-fullscreen` class.
+   * - The original container is identified by the `.video-js-container` class.
+   *
+   * @returns void
+   */
+  putHeaderOfVideoInFullscreenContainer(): void {
+    this.player.on('fullscreenchange', () => {
+      const isFullscreen = this.player.isFullscreen();
+      const headerEl = this.headerRef.nativeElement;
+      if (isFullscreen) {
+        const fsContainer = document.querySelector('.vjs-fullscreen');
+        fsContainer?.appendChild(headerEl);
+      } else {
+        const container = document.querySelector('.video-js-container');
+        container?.appendChild(headerEl);
+      }
+    });
+  }
+
+  /**
+   * Adjusts the opacity and pointer events of the header element based on user activity.
+   * 
+   * This method listens for `userinactive` and `useractive` events from the video player.
+   * When the user becomes inactive, the header's opacity is set to `0` and pointer events
+   * are disabled. When the user becomes active, the header's opacity is restored to `1`
+   * and pointer events are re-enabled.
+   * 
+   * @returns {void}
+   */
+  changeHeaderOpacityOnUserActivity(): void {
+    this.player.on('userinactive', () => {
+      this.headerRef.nativeElement.style.opacity = '0';
+      this.headerRef.nativeElement.style.pointerEvents = 'none';
+    });
+    this.player.on('useractive', () => {
+      this.headerRef.nativeElement.style.opacity = '1';
+      this.headerRef.nativeElement.style.pointerEvents = 'auto';
+    });
   }
 
   /**
@@ -84,58 +195,13 @@ export class WatchMovieComponent {
       this.apiService.getDataWithSlug(this.movieEndpoint, slug).subscribe(
         (res) => {
           this.movie = res;
-          this.laodMovieAndPlayWhenHlsReady();
+          this.h3 = res.title;
+          this.getVideoElementAndMovieHlsUrl();
         },
         (err) => {
           console.error(err);
         }
       )
-    }
-  }
-
-  /**
-   * Loads the movie and plays it when HLS is ready.
-   * This method checks if the movie reference and HLS URL are available,
-   * then initializes the video element and calls the method to load and play the movie.
-   * It also sets the video element to be unmuted and triggers change detection.
-   */
-  laodMovieAndPlayWhenHlsReady(): void {
-    let movie_url = this.movie.hls_url;
-    if (this.movieRef && movie_url) {
-      console.log(movie_url);
-      this.video = this.movieRef.nativeElement;
-      this.video.muted = false;
-      this.cdr.detectChanges();
-      this.ifHlsReadyLoadAndPlay(movie_url);
-    }
-  }
-
-  /**
-   * Loads and plays a movie using HLS (HTTP Live Streaming) if supported.
-   * If HLS is not supported but the browser can play HLS natively, it sets the video source directly.
-   *
-   * @param movie_url - The URL of the movie to be loaded and played.
-   * 
-   * @remarks
-   * - This method checks if HLS is supported and the platform is a browser.
-   * - If HLS is supported, it initializes an HLS instance, destroys any existing instance,
-   *   loads the movie source, and attaches it to the video element.
-   * - If HLS is not supported but the browser can natively play HLS streams, it directly sets
-   *   the video element's source to the provided URL.
-   * 
-   * @requires Hls - The HLS.js library must be available for this method to work.
-   * @requires isPlatformBrowser - A utility function to check if the code is running in a browser environment.
-   * 
-   * @throws This method does not explicitly throw errors but relies on the HLS.js library and browser capabilities.
-   */
-  ifHlsReadyLoadAndPlay(movie_url: string): void {
-    if (Hls.isSupported() && isPlatformBrowser(this.platformId)) {
-      this.hls?.destroy();
-      this.hls = new Hls();
-      this.hls.loadSource(movie_url);
-      this.hls.attachMedia(this.video);
-    } else if (this.video.canPlayType && this.video.canPlayType('application/vnd.apple.mpegurl')) {
-      this.video.src = movie_url;
     }
   }
 
