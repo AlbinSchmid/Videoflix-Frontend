@@ -7,6 +7,7 @@ import { ResetPasswordComponent } from './reset-password/reset-password.componen
 import { ActivateAccountComponent } from './activate-account/activate-account.component';
 import { BrowseComponent } from './browse/browse.component';
 import { WatchMovieComponent } from './watch-movie/watch-movie.component';
+import { AuthGuard } from './shared/guards/auth.guard';
 
 export const routes: Routes = [
     {path: '', component: LandingPageComponent},
@@ -15,6 +16,6 @@ export const routes: Routes = [
     {path: 'forgot-password', component: ForgotPasswordComponent},
     {path: 'reset-password/:uid/:token', component: ResetPasswordComponent},
     {path: 'activate/:uid/:token', component: ActivateAccountComponent},
-    {path: 'browse', component: BrowseComponent},
-    {path: 'browse/watch/:slug', component: WatchMovieComponent},
+    {path: 'browse', component: BrowseComponent, canActivate: [AuthGuard]},
+    {path: 'browse/watch/:slug', component: WatchMovieComponent, canActivate: [AuthGuard]},
 ];

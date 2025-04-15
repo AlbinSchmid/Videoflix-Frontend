@@ -17,6 +17,6 @@
         </div>
     </div>
     @for (category of movieSections; track $index) {
-    <app-category [ngStyle]="{'margin-top.px': $index == 0 ? 35 : 50}" [category]="category"></app-category>
+    <app-category [ngStyle]="{'margin-top.px': $index == 0 ? 35 : 50}" (muteBackgroundVideo)="toggleSoundOfMovie($event)" [category]="category"></app-category>
     }
 </section>

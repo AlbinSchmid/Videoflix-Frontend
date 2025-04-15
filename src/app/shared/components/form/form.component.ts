@@ -95,6 +95,46 @@ export class FormComponent {
   }
 
   /**
+   * Handles the submission of the login form.
+   * 
+   * @param form - The Angular `NgForm` instance representing the login form.
+   * 
+   * This method checks if the form is valid. If valid, it hides any error messages
+   * and sends a login request using the provided login data. If the form is invalid,
+   * it displays an error message.
+   */
+  submitLogInForm(form: NgForm): void {
+    if (form.valid) {
+      this.showError = false;
+      this.sendLogInRequest(this.loginData);
+    } else {
+      this.showError = true;
+    }
+  }
+
+  /**
+   * Handles the submission of the registration form.
+   * 
+   * @param form - The Angular `NgForm` instance representing the registration form.
+   * 
+   * This method checks if the form is valid and if the password and repeated password match.
+   * If valid, it hides any error messages and sends a registration request using the provided data.
+   * If the form is invalid, it displays an error message.
+   */
+  sendLogInRequest(data: object): void {
+    this.showLoadingSpinner = true;
+    this.apiService.postLoginOrLogouData(this.loginEndpoint, data).subscribe({
+      next: (res) => {
+        this.requestSuccess(res);
+        this.router.navigate(['/browse']);
+      },
+      error: (err) => {
+        this.requestError(err);
+      }
+    })
+  }
+
+  /**
    * Handles the submission of a form by validating its data and sending a POST request to the specified endpoint.
    *
    * @param form - The Angular `NgForm` instance containing the form data to be submitted.

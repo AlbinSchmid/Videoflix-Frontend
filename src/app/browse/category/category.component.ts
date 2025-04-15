@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, inject, Input, Renderer2, ViewChild } from '@angular/core';
+import { Component, ElementRef, inject, Input, Output, Renderer2, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-// import Hls from 'hls.js';
 import { MovieDetailComponent } from '../movie-detail/movie-detail.component';
+import { EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'app-category',
@@ -18,6 +18,7 @@ export class CategoryComponent {
   el = inject(ElementRef);
   renderer = inject(Renderer2);
   @Input() category: any;
+  @Output() muteBackgroundVideo = new EventEmitter<boolean>();
   rotateX = 0;
   rotateY = 0;
   effectIntensity = 8;
@@ -29,6 +30,7 @@ export class CategoryComponent {
    * @param movie - An object representing the movie to display in the detail dialog.
    */
   openMovieDetail(movie: object): void {
+    this.muteBackgroundVideo.emit(true);
     this.dialog.open(MovieDetailComponent, {
       autoFocus: false,
       data: {

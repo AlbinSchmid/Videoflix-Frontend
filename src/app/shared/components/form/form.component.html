@@ -1,7 +1,7 @@
 <div class="content">
     @if (formType === 'login') {
     <h1>Log in</h1>
-    <form (ngSubmit)="submitForm(form, loginEndpoint, loginData)" #form="ngForm">
+    <form (ngSubmit)="submitLogInForm(form)" #form="ngForm">
         <label class="label-input">
             <input type="email" class="input-blue" placeholder="Email Address"
                 pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}" required [(ngModel)]="loginData.email"

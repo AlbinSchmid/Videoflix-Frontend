@@ -52,7 +52,6 @@ export class BrowseComponent {
   ngAfterViewInit(): void {
     setTimeout(() => {
       this.sendGetRequest();
-      this.getVideoElementAndMovieHlsUrl();
     });
   }
 
@@ -100,6 +99,7 @@ export class BrowseComponent {
       let randomCategory = this.movieSections[randomIndex];
       let randomMovieIndex = Math.floor(Math.random() * randomCategory.movies.length);
       this.randomMovie = randomCategory.movies[randomMovieIndex];
+      this.getVideoElementAndMovieHlsUrl();
     }
   }
 
@@ -116,16 +116,19 @@ export class BrowseComponent {
       this.movieSections = Object.entries(response as { [genre: string]: any[] })
         .filter(([_, movies]) => movies.length > 0)
         .map(([genre, movies]) => ({ genre, movies }));
+        this.getRandomMovie();
     });
-    this.getRandomMovie();
   }
 
   /**
   * Toggles the sound of the video element by muting or unmuting it.
   * If the video is currently muted, this method will unmute it, and vice versa.
   */
-  toggleSoundOfMovie(): void {
-    if (this.video) this.video.muted = !this.video.muted;
+  toggleSoundOfMovie(event?: boolean): void {
+    if (this.video) {
+      this.video.muted = !this.video.muted
+      if (event) this.video.muted = true;
+    }
   }
 
   /**
