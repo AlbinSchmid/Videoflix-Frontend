@@ -7,6 +7,7 @@ import videojs, { VideoJsPlayer } from 'video.js';
 import Hls from 'hls.js';
 import 'videojs-thumbnails';
 import { BrowseService } from '../shared/services/browse.service';
+import { finished } from 'stream';
 
 
 declare module 'video.js' {
@@ -31,17 +32,21 @@ export class WatchMovieComponent {
   router = inject(ActivatedRoute);
   cdr = inject(ChangeDetectorRef);
 
-  player!: any;
-
   @ViewChild('movie', { static: false }) movieRef!: ElementRef<HTMLVideoElement>;
   @ViewChild('videoHeader', { static: true }) headerRef!: ElementRef<HTMLElement>;
-
+  
+  player!: any;
   hls?: Hls;
 
   video: any = null;
-  movieEndpoint: string = 'movies/';
-  movie: any = {};
-  h3: string = ''
+  movieEndpoint: string = 'movie/';
+  moviesProgressEndpoint: string = 'movies/progress/';
+  movieProgressEndpoint: string = 'movie/progress/';
+
+  progressMovie: any = {};
+  movieTitle: string = ''
+  proccessMovie: boolean = false
+
 
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) { }
@@ -61,7 +66,7 @@ export class WatchMovieComponent {
     setTimeout(() => {
       if (isPlatformBrowser(this.platformId)) {
         const slug = this.router.snapshot.paramMap.get('slug');
-        this.sendGetRequest(slug);
+        if (slug) this.sendGetRequest(slug);
       }
       this.getVideoJsPLayerReady();
     });
@@ -84,8 +89,8 @@ export class WatchMovieComponent {
   getVideoElementAndMovieHlsUrl(): void {
     if (this.movieRef) {
       this.player.muted(false);
-      this.player.volume(1);
-      let movieHlsUrl = this.movie.hls_url;
+      this.player.volume(0.3);
+      let movieHlsUrl = this.progressMovie.movie.hls_url;
       this.video = this.movieRef.nativeElement;
       setTimeout(() => {
         this.browseService.loadHlsAndPlayWhenReady(this.video, movieHlsUrl, false);
@@ -183,26 +188,88 @@ export class WatchMovieComponent {
   }
 
   /**
-   * Sends a GET request to fetch movie data using the provided slug.
-   * If the slug is valid, it retrieves the movie data from the API and assigns it to the `movie` property.
-   * Once the data is retrieved, it triggers the process to load and play the movie when HLS is ready.
-   * Logs an error to the console if the request fails.
+   * Sends a GET request to retrieve movie progress and updates the component's state.
    *
-   * @param slug - The unique identifier for the movie. Can be a string or null.
+   * @param slug - The unique identifier for the movie, used to construct the endpoint URL.
+   *
+   * This method performs the following actions:
+   * - Constructs the endpoint URL using the provided slug.
+   * - Sends a GET request to the API service to fetch movie progress data.
+   * - Updates the `progressMovie` property with the response data.
+   * - Sets the `movieTitle` property with the movie's title from the response.
+   * - Updates the player's current playback time using the progress in seconds from the response.
+   * - Calls `getVideoElementAndMovieHlsUrl` to handle further video setup.
+   *
+   * If an error occurs during the API request, it logs the error to the console.
    */
-  sendGetRequest(slug: string | null) {
-    if (slug) {
-      this.apiService.getDataWithSlug(this.movieEndpoint, slug).subscribe(
-        (res) => {
-          this.movie = res;
-          this.h3 = res.title;
-          this.getVideoElementAndMovieHlsUrl();
-        },
-        (err) => {
-          console.error(err);
-        }
-      )
+  sendGetRequest(slug: string): void {
+    const slugEndpoint = this.movieProgressEndpoint + slug + '/';
+    this.apiService.getData(slugEndpoint).subscribe(
+      (res) => {
+        this.progressMovie = res;
+        this.movieTitle = res.movie.title;
+        this.player.currentTime(res.progress_seconds);
+        this.getVideoElementAndMovieHlsUrl();
+      },
+      (err) => {
+        console.error(err);
+      }
+    )
+  }
+
+  /**
+   * Sends a PATCH request to update the movie progress for a specific slug.
+   * 
+   * @param data - The data to be sent in the PATCH request.
+   * @param slug - The slug of the movie to be updated.
+   * 
+   * @remarks
+   * This method constructs the endpoint URL using the provided slug and sends
+   * the PATCH request using the `apiService`. If the request is successful,
+   * it logs the response; otherwise, it logs an error.
+   */
+  sendPatchRequest(data: object, slug: string): void {
+    const slugEndpoint = this.movieProgressEndpoint + slug + '/';
+    this.apiService.patchData(slugEndpoint, data).subscribe(
+      (err) => {
+        console.error(err);
+      }
+    )
+  }
+
+  /**
+   * Updates the progress of the video playback by calculating the current time, 
+   * remaining time, and total duration of the video. The method then stores 
+   * these values using the `setData` function.
+   *
+   * @remarks
+   * This method retrieves the current playback time and duration from the video 
+   * player instance (`this.player`) and calculates the remaining time. It 
+   * converts the current time to seconds before passing the data to `setData`.
+   */
+  safeProgress(): void {
+    let duration = this.player.duration();
+    let currentTime = this.player.currentTime();
+    let remainingTime = duration - currentTime;
+    const seconds = Math.floor(this.player.currentTime());
+    this.setData(seconds, remainingTime);
+  }
+
+  /**
+   * Updates the progress data for the movie and sends a patch request to the server.
+   *
+   * @param seconds - The current progress in seconds.
+   * @param remainingTime - The remaining time in seconds for the movie.
+   *                        If the remaining time is less than 150 seconds, the movie is marked as finished.
+   * 
+   * @returns void
+   */
+  setData(seconds: number, remainingTime: number): void {
+    let data = {
+      progress_seconds: remainingTime < 150 ? 0 : seconds,
+      finished: remainingTime < 150 ? true : false,
     }
+    this.sendPatchRequest(data, this.progressMovie.movie.slug);
   }
 
   /**

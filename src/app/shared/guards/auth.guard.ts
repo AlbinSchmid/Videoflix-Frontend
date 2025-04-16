@@ -24,10 +24,11 @@ export class AuthGuard implements CanActivate {
    */
   canActivate(): Observable<boolean> {
     return this.apiService.getCheckLoggedin().pipe(
-      map(() => true),
+      map(() => {
+        return true;
+      }),
       catchError(() => {
         this.router.navigate(['/login']);
-        this.errorSerice.errorMessages.push('You are not logged in. Please log in to access this page.');
         return of(false);
       })
     );

@@ -2,8 +2,8 @@
     <video #movie class="video-js vjs-default-skin" controls autoplay muted playsinline preload="auto" width="100%"
         height="auto"></video>
     <div #videoHeader class="video-header">
-        <a href="/browse"><mat-icon fontIcon="arrow_back"></mat-icon></a>
-        <h3>{{ h3 }}</h3>
-        <a href="/browse"><img src="/img/logo-small.png" alt="videoflix-logo"></a>
+        <a (click)="safeProgress()" href="/browse"><mat-icon fontIcon="arrow_back"></mat-icon></a>
+        <h3>{{ movieTitle }}</h3>
+        <a (click)="safeProgress()" href="/browse"><img src="/img/logo-small.png" alt="videoflix-logo"></a>
     </div>
 </div>

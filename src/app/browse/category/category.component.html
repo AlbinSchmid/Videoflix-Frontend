@@ -4,10 +4,8 @@
         @for (movie of category.movies; track $index) {
         <div (mousemove)="onMouseMove($event)" (click)="openMovieDetail(movie)" (mouseleave)="onMouseLeave($event)"
             class="movie-cover-div" #movieCard>
-            <img src="{{ movie.movie_cover }}" alt="movie-cover">
+            <img src="{{ movie.movie_cover || movie.movie.movie_cover }}" alt="movie-cover">
         </div>
         }
     </div>
-    <!-- <video class="test" #target class="video-js vjs-default-skin" controls preload="auto" width="100%" height="auto"></video> -->
-    <!-- <video #videoRef controls autoplay width="100%" height="auto"></video> -->
 </div>

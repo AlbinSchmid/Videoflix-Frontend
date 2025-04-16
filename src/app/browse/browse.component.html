@@ -9,14 +9,21 @@
             <div class="info-div-content">
                 <h1>{{ randomMovie.title }}</h1>
                 <p>{{ randomMovie.description }}</p>
-                <button mat-flat-button (click)="navigateToWatchComponent()"><span><mat-icon fontIcon="play_arrow"></mat-icon>Play</span></button>
+                <button mat-flat-button (click)="navigateToWatchComponent()"><span><mat-icon
+                            fontIcon="play_arrow"></mat-icon>Play</span></button>
             </div>
             <div>
-                <mat-icon *ngIf="video" class="sound-icon" fontIcon="{{video.muted ? 'volume_off' : 'volume_up'}}" (click)="toggleSoundOfMovie()"></mat-icon>
+                <mat-icon *ngIf="video" class="sound-icon" fontIcon="{{video.muted ? 'volume_off' : 'volume_up'}}"
+                    (click)="toggleSoundOfMovie()"></mat-icon>
             </div>
         </div>
     </div>
+    @for (category of continueWatching; track $index) {
+    <app-category [ngStyle]="{'margin-top.px': 35}"
+        (muteBackgroundVideo)="toggleSoundOfMovie($event)" [category]="category"></app-category>
+    }
     @for (category of movieSections; track $index) {
-    <app-category [ngStyle]="{'margin-top.px': $index == 0 ? 35 : 50}" (muteBackgroundVideo)="toggleSoundOfMovie($event)" [category]="category"></app-category>
+    <app-category [ngStyle]="{'margin-top.px': continueWatching.length == 0 && $index > 0 || continueWatching.length > 0 ? 35 : 35}"
+        (muteBackgroundVideo)="toggleSoundOfMovie($event)" [category]="category"></app-category>
     }
 </section>

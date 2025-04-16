@@ -1,1 +1,7 @@
-<router-outlet />
+<ng-container *ngIf="!authService.isLoading; else loading">
+    <router-outlet />
+</ng-container>
+
+<ng-template #loading>
+    <div class="loading">Videoflix lädt...</div>
+</ng-template>

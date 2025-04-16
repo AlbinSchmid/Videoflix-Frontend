@@ -3,6 +3,7 @@ import { Component, ElementRef, inject, Input, Output, Renderer2, ViewChild } fr
 import { MatDialog } from '@angular/material/dialog';
 import { MovieDetailComponent } from '../movie-detail/movie-detail.component';
 import { EventEmitter } from '@angular/core';
+import { obj } from 'video.js/dist/types/utils/obj';
 
 @Component({
   selector: 'app-category',
@@ -17,42 +18,45 @@ export class CategoryComponent {
   dialog = inject(MatDialog);
   el = inject(ElementRef);
   renderer = inject(Renderer2);
+
   @Input() category: any;
   @Output() muteBackgroundVideo = new EventEmitter<boolean>();
-  rotateX = 0;
-  rotateY = 0;
-  effectIntensity = 8;
+
+  rotateX: number = 0;
+  rotateY: number = 0;
+  effectIntensity: number = 8;
   animationFrameId: number | null = null;
+
+  ngOnInit(): void {
+    this.setCategoryName();
+  }
+
+  /**
+   * Updates the `genre` property of the `category` object to a more user-friendly name
+   * based on its current value. Specifically:
+   * - If the genre is 'continue_watching', it is updated to 'Continue Watching'.
+   * - If the genre is 'new_on_videoflix', it is updated to 'New on Videoflix'.
+   *
+   * @returns {void}
+   */
+  setCategoryName(): void {
+    if (this.category.genre == 'continue_watching') this.category.genre = 'Continue Watching';
+    if (this.category.genre == 'new_on_videoflix') this.category.genre = 'New on Videoflix';
+  }
 
   /**
    * Opens a dialog to display the details of a selected movie.
    *
    * @param movie - An object representing the movie to display in the detail dialog.
    */
-  openMovieDetail(movie: object): void {
+  openMovieDetail(movie: {movie: object}): void {
     this.muteBackgroundVideo.emit(true);
     this.dialog.open(MovieDetailComponent, {
       autoFocus: false,
       data: {
-        movie: movie,
+        movie: movie.movie || movie,
       },
     });
-  }
-
-  /**
-   * Handles the mouse move event on a card element.
-   * Removes the 'leave-transition' class from the card and cancels any ongoing animation frame.
-   * Initiates the card animation based on the current mouse event.
-   *
-   * @param event - The mouse event triggered by the user's interaction.
-   */
-  onMouseMove(event: MouseEvent): void {
-    let card = event.currentTarget as HTMLElement;
-    card.classList.remove('leave-transition');
-    if (this.animationFrameId) {
-      cancelAnimationFrame(this.animationFrameId);
-    }
-    this.cardAnimation(card, event);
   }
 
   /**
@@ -100,6 +104,29 @@ export class CategoryComponent {
     this.renderer.setStyle(card, 'transform', resetTransform);
   }
 
+  /**
+   * Handles the mouse move event on a card element.
+   * Removes the 'leave-transition' class from the card and cancels any ongoing animation frame.
+   * Initiates the card animation based on the current mouse event.
+   *
+   * @param event - The mouse event triggered by the user's interaction.
+   */
+  onMouseMove(event: MouseEvent): void {
+    let card = event.currentTarget as HTMLElement;
+    card.classList.remove('leave-transition');
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+    }
+    this.cardAnimation(card, event);
+  }
+
+  /**
+   * Converts the first letter of the given category name to uppercase
+   * and returns the modified string.
+   *
+   * @param categoryName - The name of the category to be transformed.
+   * @returns A string with the first letter capitalized and the rest unchanged.
+   */
   firstLetterBig(categoryName: string): string {
     return categoryName.charAt(0).toUpperCase() + categoryName.slice(1);
   }

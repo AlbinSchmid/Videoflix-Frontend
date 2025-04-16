@@ -9,6 +9,7 @@ export class ApiService {
   http = inject(HttpClient)
 
   API_BASE_URL = 'http://localhost:8000/api/';
+  authLoading = false;
 
   /**
    * Sends a POST request to the specified endpoint with the provided data.
@@ -18,7 +19,7 @@ export class ApiService {
    * @returns An Observable that emits the response from the server.
   */
   postData(endpoint: string, data: object): Observable<any> {
-    return this.http.post(this.API_BASE_URL + endpoint, data);
+    return this.http.post(this.API_BASE_URL + endpoint, data, {withCredentials: true});
   }
 
   /**
@@ -40,7 +41,7 @@ export class ApiService {
    * @returns An Observable that emits the response data from the API.
    */
   getData(endpoint: string): Observable<any> {
-    return this.http.get(this.API_BASE_URL + endpoint);
+    return this.http.get(this.API_BASE_URL + endpoint, { withCredentials: true });
   }
 
   /**
@@ -57,14 +58,11 @@ export class ApiService {
     return this.http.get(this.API_BASE_URL + 'logged/', { withCredentials: true });
   }
 
-  /**
-   * Fetches data from the specified API endpoint using a provided slug.
-   *
-   * @param endpoint - The API endpoint to which the request will be made.
-   * @param slug - The slug to append to the endpoint for the request.
-   * @returns An Observable that emits the response data from the HTTP GET request.
-   */
-  getDataWithSlug(endpoint: string, slug: string): Observable<any> {
-    return this.http.get(this.API_BASE_URL + endpoint + slug);
+  patchData(endpoint: string, data: object): Observable<any> {
+    return this.http.patch(this.API_BASE_URL + endpoint, data, { withCredentials: true });
+  }
+
+  deleteData(endpoint: string): Observable<any> {
+    return this.http.delete(this.API_BASE_URL + endpoint, { withCredentials: true });
   }
 }

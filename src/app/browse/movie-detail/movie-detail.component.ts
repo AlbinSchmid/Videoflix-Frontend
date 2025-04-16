@@ -1,10 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, inject, ViewChild } from '@angular/core';
+import { Component, CSP_NONCE, ElementRef, inject, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
 import { BrowseService } from '../../shared/services/browse.service';
+import { ApiService } from '../../shared/services/api.service';
+import videojs, { VideoJsPlayer } from 'video.js';
 
 @Component({
   selector: 'app-movie-detail',
@@ -17,15 +19,22 @@ import { BrowseService } from '../../shared/services/browse.service';
   styleUrl: './movie-detail.component.scss'
 })
 export class MovieDetailComponent {
+  apiService = inject(ApiService);
   browseService = inject(BrowseService);
   dialogRef = inject(MatDialogRef<MovieDetailComponent>);
   router = inject(Router);
   data = inject(MAT_DIALOG_DATA);
 
+  movieProgressEndpoint: string = 'movies/progress/';
+  continueWatching: boolean = false;
+  allreadyWatched: boolean = false;
+
+
   @ViewChild('videoRef', { static: true }) videoElementRef!: ElementRef<HTMLVideoElement>;
 
   video: HTMLVideoElement | undefined;
   movieDuration: string = '';
+  player!: any;
 
   /**
    * Lifecycle hook that is called after Angular has fully initialized
@@ -45,7 +54,30 @@ export class MovieDetailComponent {
   ngAfterViewInit(): void {
     setTimeout(() => {
       this.getVideoElementAndMovieHlsUrl();
+      this.loadMoviesProgress();
     });
+  }
+
+  /**
+   * Loads the progress of movies being watched by the user.
+   * This method fetches data from the `continueWatchingEndpoint` using the `apiService`
+   * and checks if the current movie exists in the response. If the movie exists,
+   * it sets the `continueWatching` flag to `true`, otherwise to `false`.
+   *
+   * @returns {void} This method does not return a value.
+   */
+  loadMoviesProgress(): void {
+    this.apiService.getData(this.movieProgressEndpoint).subscribe(
+      (response) => {
+        if (response) {
+          const movieDetailId = this.data.movie.id
+          const existContinue = response.some((item: any) => item.id === movieDetailId && item.finished === false);
+          const existFinished = response.some((item: any) => item.id === movieDetailId && item.finished === true);
+          existContinue ? this.continueWatching = true : this.continueWatching = false;
+          existFinished ? this.allreadyWatched = true : this.allreadyWatched = false;
+        };
+      }
+    )
   }
 
   /**
@@ -62,11 +94,30 @@ export class MovieDetailComponent {
     if (this.videoElementRef) {
       let movieHlsUrl = this.data.movie.hls_url;
       this.video = this.videoElementRef.nativeElement;
+      this.setPlayerAndResumeVolumeAndPauseAt30Sec();
       this.browseService.loadHlsAndPlayWhenReady(this.video, movieHlsUrl, false);
       this.video.addEventListener('loadedmetadata', () => {
         if (this.video) this.formatDuration(this.video.duration);
       });
     }
+  }
+
+  /**
+   * Sets up the Video.js player instance with specific configurations and event listeners.
+   * It sets the volume to 0.05 and pauses the video when it reaches 30 seconds.
+   *
+   * @remarks
+   * This method initializes the Video.js player using the `videoElementRef` and sets up
+   * an event listener to pause the video at 30 seconds.
+   */
+  setPlayerAndResumeVolumeAndPauseAt30Sec(): void {
+    this.player = videojs(this.videoElementRef.nativeElement);
+    this.player.volume(0.05);
+    this.player.on('timeupdate', () => {
+      if (this.player.currentTime() >= 30) {
+        this.player.pause();
+      }
+    });
   }
 
   /**
@@ -121,13 +172,49 @@ export class MovieDetailComponent {
   }
 
   /**
-   * Navigates to the watch component for the selected movie.
-   * This method first closes the movie detail view and then
-   * uses the Angular Router to navigate to the watch component,
-   * passing the movie's slug as a route parameter.
+   * Navigates to the watch component for the current movie.
+   * 
+   * This method performs the following actions:
+   * 1. Posts the movie progress if the `continueWatching` flag is not set.
+   * 2. Closes the movie detail view.
+   * 3. Navigates to the watch component using the movie's slug.
+   * 
+   * @returns {void}
    */
   navigateToWatchComponent(): void {
+    if (!this.continueWatching && !this.allreadyWatched) this.postMovieProgress();
     this.closeMovieDetail();
     this.router.navigate(['/browse/watch', this.data.movie.slug]);
+  }
+
+  /**
+   * Sends the progress of the currently viewed movie to the server.
+   * 
+   * This method constructs a data object containing the movie's slug, 
+   * the progress in seconds (defaulting to 0), and a flag indicating 
+   * whether the movie has been finished (defaulting to false). 
+   * It then posts this data to the specified movie progress endpoint 
+   * using the `apiService`.
+   * 
+   * @returns {void} This method does not return a value.
+   */
+  postMovieProgress(): void {
+    let data = {
+      movie_slug: this.data.movie.slug,
+      progress_seconds: 0,
+      finished: false,
+    }
+    console.log(data)
+    this.apiService.postData(this.movieProgressEndpoint, data).subscribe()
+  }
+
+  /**
+   * Determines the appropriate action label based on the user's watching status.
+   *
+   * @returns {string} - Returns 'Continue' if the user has a partially watched movie,
+   *                     otherwise returns 'Play' for a new viewing session.
+   */
+  checkIfContinueToMovie(): string {
+    return this.continueWatching ? 'Continue' : 'Play';
   }
 }

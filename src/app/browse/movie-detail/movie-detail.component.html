@@ -1,11 +1,11 @@
 <div class="background">
     <div class="movie-preview">
-        <video class="background-video" #videoRef autoplay width="100%" playsinline height="auto"></video>
+        <video class="background-video" #videoRef autoplay playsinline height="auto"></video>
         <div class="overlay-div">
             <mat-icon class="detail-icon close-icon" fontIcon="close" (click)="closeMovieDetail()"></mat-icon>
             <h2>{{ data.movie.title }}</h2>
             <div class="bottom-div">
-                <button mat-flat-button (click)="navigateToWatchComponent()"><span><mat-icon fontIcon="play_arrow"></mat-icon>Play</span></button>
+                <button mat-flat-button [ngStyle]="{'width.px': continueWatching ? '200' : '160'}" (click)="navigateToWatchComponent()"><span><mat-icon fontIcon="play_arrow"></mat-icon>{{ checkIfContinueToMovie() }}</span></button>
                 <mat-icon *ngIf="video" class="detail-icon sound-icon" fontIcon="{{video.muted ? 'volume_off' : 'volume_up'}}" (click)="toggleSoundOfMovie()"></mat-icon>
             </div>
         </div>

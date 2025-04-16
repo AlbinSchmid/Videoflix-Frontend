@@ -8,6 +8,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { BrowseService } from '../shared/services/browse.service';
+import videojs from 'video.js';
 import Hls from 'hls.js';
 
 @Component({
@@ -28,17 +29,19 @@ export class BrowseComponent {
   router = inject(Router);
   browseService = inject(BrowseService);
   apiService = inject(ApiService);
-
   @ViewChild('backgroundMovie', { static: true }) backgroundMovieRef!: ElementRef<HTMLVideoElement>;
 
-  hls?: Hls;
-
   movieSections: { genre: string; movies: any[] }[] = [];
+  continueWatching: { genre: string; movies: any[] }[] = [];
   randomMovie: any = {};
-  
-  moviesEndpoint: string = 'movies/';
-  video: HTMLVideoElement | undefined;
 
+  hls?: Hls;
+  player!: any;
+
+  moviesEndpoint: string = 'movies/';
+  video: any = null;
+
+  
   /**
    * Lifecycle hook that is called after Angular has fully initialized the component's view.
    * This method sets a timeout to perform two actions:
@@ -51,7 +54,7 @@ export class BrowseComponent {
    */
   ngAfterViewInit(): void {
     setTimeout(() => {
-      this.sendGetRequest();
+      this.loadMovieLists();
     });
   }
 
@@ -67,6 +70,12 @@ export class BrowseComponent {
       let movieHlsUrl = this.randomMovie.hls_url;
       this.video = this.backgroundMovieRef.nativeElement;
       this.browseService.loadHlsAndPlayWhenReady(this.video, movieHlsUrl, true);
+      const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+      if (nav?.type !== 'reload') {
+        setTimeout(() => {
+          this.video.muted = false;
+        });
+      }
     }
   }
 
@@ -99,24 +108,55 @@ export class BrowseComponent {
       let randomCategory = this.movieSections[randomIndex];
       let randomMovieIndex = Math.floor(Math.random() * randomCategory.movies.length);
       this.randomMovie = randomCategory.movies[randomMovieIndex];
+      this.stopVideoAt30Seconds();
       this.getVideoElementAndMovieHlsUrl();
     }
   }
 
   /**
-   * Sends a GET request to fetch movie data from the specified endpoint and processes the response.
-   * The response is transformed into an array of movie sections, each containing a genre and its associated movies.
-   * Filters out genres with no movies and maps the remaining data into a structured format.
-   * Additionally, triggers the retrieval of a random movie.
-   *
+   * Stops the video playback when it reaches 30 seconds.
+   * 
+   * This method initializes a Video.js player instance using the `backgroundMovieRef` element,
+   * sets the player's volume to 5%, and listens for the `timeupdate` event. When the video's
+   * current playback time reaches or exceeds 30 seconds, the video is paused automatically.
+   * 
+   * @remarks
+   * Ensure that the `backgroundMovieRef` is properly initialized and points to a valid video element.
+   * The `videojs` library must also be included and properly configured in the project.
+   */
+  stopVideoAt30Seconds(): void {
+    this.player = videojs(this.backgroundMovieRef.nativeElement) as any;
+    this.player.volume(0.05);
+    this.player.on('timeupdate', () => {
+      if (this.player.currentTime() >= 30) {
+        this.player.pause();
+      }
+    });
+  }
+
+  /**
+   * Loads movie lists from the API and organizes them into different sections.
+   * 
+   * This method fetches data from the specified movies endpoint and processes
+   * the response to categorize movies into two main sections:
+   * - `movieSections`: Contains movies grouped by genres, excluding "continue_watching" 
+   *   and "watched" genres, and only includes genres with at least one movie.
+   * - `continueWatching`: Contains movies from the "continue_watching" and "watched" 
+   *   genres, provided they have at least one movie.
+   * 
+   * After organizing the movies, it selects a random movie using the `getRandomMovie` method.
+   * 
    * @returns {void} This method does not return a value.
    */
-  sendGetRequest(): void {
+  loadMovieLists(): void {
     this.apiService.getData(this.moviesEndpoint).subscribe((response) => {
       this.movieSections = Object.entries(response as { [genre: string]: any[] })
-        .filter(([_, movies]) => movies.length > 0)
+        .filter(([genre, movies]) => genre != 'continue_watching' && genre != 'watched' && movies.length > 0)
         .map(([genre, movies]) => ({ genre, movies }));
-        this.getRandomMovie();
+      this.continueWatching = Object.entries(response as { [genre: string]: any[] })
+        .filter(([genre, movies]) => (genre == 'continue_watching' || genre == 'watched') && movies.length > 0)
+        .map(([genre, movies]) => ({ genre, movies }));
+      this.getRandomMovie();
     });
   }
 
