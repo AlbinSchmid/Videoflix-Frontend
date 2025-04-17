@@ -52,3 +52,13 @@ video {
 ::ng-deep .video-js.vjs-user-active+.video-header {
     opacity: 1;
 }
+
+app-not-found {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 50;
+
+}

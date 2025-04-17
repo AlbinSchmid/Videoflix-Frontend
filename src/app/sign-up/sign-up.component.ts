@@ -27,6 +27,7 @@ export class SignUpComponent implements OnInit {
   errorService = inject(ErrorService)
   router = inject(ActivatedRoute)
   email: string = ''
+  
 
   /**
    * Lifecycle hook that is called after Angular has initialized all data-bound properties of a directive.

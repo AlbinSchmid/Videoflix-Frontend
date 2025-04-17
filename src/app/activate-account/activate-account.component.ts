@@ -24,6 +24,7 @@ export class ActivateAccountComponent implements OnInit {
   message: string = '';
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+  
 
   /**
    * Lifecycle hook that is called after Angular has initialized the component.

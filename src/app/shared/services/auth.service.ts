@@ -1,14 +1,19 @@
 import { inject, Injectable } from '@angular/core';
 import { ApiService } from './api.service';
 import { firstValueFrom } from 'rxjs';
+import { ErrorService } from './error.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  apiService = inject(ApiService) 
+  router = inject(Router);
+  apiService = inject(ApiService);
+  errorService = inject(ErrorService);
   isAuthenticated = false;
-  isLoading = true;
+  isLoading = false;
 
   /**
    * Initializes the authentication state of the application.
@@ -26,8 +31,11 @@ export class AuthService {
     try {
       await firstValueFrom(this.apiService.getCheckLoggedin());
       this.isAuthenticated = true;
-    } catch {
+    } catch (error) {
+      const err = error as HttpErrorResponse;
+      this.errorService.getSuccessOrErrorMessages(err.error, 'error');
       this.isAuthenticated = false;
+      throw error;
     } finally {
       this.isLoading = false;
     }

@@ -16,7 +16,7 @@
                         fontIcon="warning"></mat-icon>Please enter a valid email address.</span>
                 }
             </label>
-            <button mat-flat-button type="submit">
+            <button mat-flat-button type="submit" [disabled]="showLoadingSpinner">
                 <mat-spinner *ngIf="showLoadingSpinner"></mat-spinner>
                 <span *ngIf="!showLoadingSpinner">Sign up ></span>
             </button>

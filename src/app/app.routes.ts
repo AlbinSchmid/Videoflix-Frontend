@@ -8,6 +8,9 @@ import { ActivateAccountComponent } from './activate-account/activate-account.co
 import { BrowseComponent } from './browse/browse.component';
 import { WatchMovieComponent } from './watch-movie/watch-movie.component';
 import { AuthGuard } from './shared/guards/auth.guard';
+import { NotFoundComponent } from './not-found/not-found.component';
+import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
+import { LegalNoticeComponent } from './legal-notice/legal-notice.component';
 
 export const routes: Routes = [
     {path: '', component: LandingPageComponent},
@@ -16,6 +19,9 @@ export const routes: Routes = [
     {path: 'forgot-password', component: ForgotPasswordComponent},
     {path: 'reset-password/:uid/:token', component: ResetPasswordComponent},
     {path: 'activate/:uid/:token', component: ActivateAccountComponent},
+    {path: 'privacy-policy', component: PrivacyPolicyComponent},
+    {path: 'legal-notice', component: LegalNoticeComponent},
     {path: 'browse', component: BrowseComponent, canActivate: [AuthGuard]},
     {path: 'browse/watch/:slug', component: WatchMovieComponent, canActivate: [AuthGuard]},
+    {path: '**', component: NotFoundComponent }
 ];

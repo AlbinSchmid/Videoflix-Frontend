@@ -80,7 +80,6 @@ export class LandingPageComponent {
     })
   }
 
-
   /**
    * Handles the success response of a request and navigates the user
    * to the appropriate route based on the response data.
@@ -107,6 +106,14 @@ export class LandingPageComponent {
     this.showLoadingSpinner = false
   }
 
+  /**
+   * Extracts success messages from the provided response object and adds them
+   * to the `successMessages` array of the `errorService`.
+   *
+   * @param res - The response object containing potential success messages.
+   *              Each property of the object is checked, and if the value is a string,
+   *              it is considered a success message.
+   */
   getSuccessMessages(res: any): void {
     for (const key in res) {
       if (typeof res[key] === 'string') {

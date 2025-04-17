@@ -1,207 +1,178 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { FormComponent } from './form.component';
 import { ApiService } from '../../services/api.service';
 import { ErrorService } from '../../services/error.service';
+import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
+import { NgForm } from '@angular/forms';
 
+/**
+ * Unit tests for the standalone FormComponent.
+ */
 describe('FormComponent', () => {
   let component: FormComponent;
   let fixture: ComponentFixture<FormComponent>;
-  let apiServiceSpy: jasmine.SpyObj<ApiService>;
-  let errorServiceSpy: jasmine.SpyObj<ErrorService>;
-  let formMock: any;
+  let apiSpy: jasmine.SpyObj<ApiService>;
+  let errorSpy: jasmine.SpyObj<ErrorService>;
+  let routerSpy: jasmine.SpyObj<Router>;
 
   beforeEach(async () => {
-    formMock = { valid: true };
-    apiServiceSpy = jasmine.createSpyObj('ApiService', ['postData']);
-    errorServiceSpy = jasmine.createSpyObj('ErrorService', ['handleError']);
-    apiServiceSpy.postData.and.returnValue(of({ message: 'Success' }));
-
+    // Mocks for services and router
+    apiSpy = jasmine.createSpyObj('ApiService', ['postLoginOrLogouData', 'postData']);
+    errorSpy = jasmine.createSpyObj('ErrorService', ['getSuccessOrErrorMessages']);
+    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
     await TestBed.configureTestingModule({
-
+      // Since FormComponent is standalone, import it instead of declaring
+      imports: [FormComponent],
       providers: [
-        { provide: ApiService, useValue: apiServiceSpy },
-        { provide: ErrorService, useValue: errorServiceSpy },
-        provideHttpClient(withInterceptorsFromDi())
-      ],
-      imports: [FormComponent]
-    })
-      .compileComponents();
+        { provide: ApiService, useValue: apiSpy },
+        { provide: ErrorService, useValue: errorSpy },
+        { provide: Router, useValue: routerSpy },
+      ]
+    }).compileComponents();
 
     fixture = TestBed.createComponent(FormComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-
-  it('should initialize with default values and call setEmailFromLandingPage on ngOnInit', () => {
-    component.resetPasswordUrlData = { uid: '123', token: 'abc' };
-    spyOn(component, 'setEmailFromLandingPage');
+  it('should populate resetPasswordData from resetPasswordUrlData on init', () => {
+    const urlData = { uid: '123', token: 'abc' };
+    component.resetPasswordUrlData = urlData;
     component.ngOnInit();
     expect(component.resetPasswordData.uid).toBe('123');
     expect(component.resetPasswordData.token).toBe('abc');
-    expect(component.setEmailFromLandingPage).toHaveBeenCalled();
   });
 
-  it('should set registration email from landing page', () => {
-    component.signupEmail = 'signup@gmail.com'
+  it('setEmailFromLandingPage() should prioritize signupEmail', () => {
+    component.signupEmail = 'a@b.com';
+    component.loginEmail = 'c@d.com';
     component.setEmailFromLandingPage();
-    expect(component.registrationData.email).toBe('signup@gmail.com');
+    expect(component.registrationData.email).toBe('a@b.com');
+    expect(component.loginData.email).toBe('');
   });
 
-  it('should set login email from landing page', () => {
-    component.loginEmail = 'signup@gmail.com'
+  it('setEmailFromLandingPage() should use loginEmail when no signupEmail', () => {
+    component.signupEmail = '';
+    component.loginEmail = 'user@site.com';
     component.setEmailFromLandingPage();
-    expect(component.loginData.email).toBe('signup@gmail.com');
+    expect(component.loginData.email).toBe('user@site.com');
   });
 
-  it('should call sendPostRequest if form is valid and no password check', () => {
-    spyOn(component, 'sendPostRequest');
-    component.submitForm(formMock, '/endpoint', { foo: 'bar' }, false);
-
-    expect(component.showError).toBeFalse();
-    expect(component.sendPostRequest).toHaveBeenCalledWith('/endpoint', { foo: 'bar' }, formMock);
-  });
-
-  it('should set showError to true if form is invalid', () => {
-    formMock.valid = false;
-    spyOn(component, 'sendPostRequest');
-
-    component.submitForm(formMock, '/endpoint', { foo: 'bar' });
-
-    expect(component.showError).toBeTrue();
-    expect(component.sendPostRequest).not.toHaveBeenCalled();
-  });
-
-  it('should not call sendPostRequest if passwords do not match', () => {
-    component.resetPasswordData = {
-      uid: '123',
-      token: 'abc',
-      password: '1234',
-      repeated_password: '5678'
-    };
-    spyOn(component, 'sendPostRequest');
-
-    component.submitForm(formMock, '/endpoint', { foo: 'bar' }, true);
-
-    expect(component.showError).toBeTrue();
-    expect(component.sendPostRequest).not.toHaveBeenCalled();
-  });
-
-  it('should call sendPostRequest if passwords match and form is valid', () => {
-    component.resetPasswordData = {
-      uid: '123',
-      token: 'abc',
-      password: '1234',
-      repeated_password: '1234'
-    };
-    spyOn(component, 'sendPostRequest');
-    component.submitForm(formMock, '/endpoint', { foo: 'bar' }, true);
-
-    expect(component.showError).toBeFalse();
-    expect(component.sendPostRequest).toHaveBeenCalledWith('/endpoint', { foo: 'bar' }, formMock);
-  });
-
-  it('should handle successful response in sendPostRequest', () => {
-    spyOn(component, 'requestSuccess');
-    formMock = {
-      reset: jasmine.createSpy('reset')
-    };
-    component.sendPostRequest('/endpoint', { foo: 'bar' }, formMock);
-    expect(component.requestSuccess).toHaveBeenCalledWith({ message: 'Success' });
-    expect(apiServiceSpy.postData).toHaveBeenCalledWith('/endpoint', { foo: 'bar' });
-  });
-
-  it('should handle error response in sendPostRequest', () => {
-    const errorResponse = { error: 'Error' };
-    apiServiceSpy.postData.and.returnValue(throwError(() => errorResponse));
-    spyOn(component, 'requestError');
-    component.sendPostRequest('/endpoint', { foo: 'bar' }, formMock);
-    expect(component.requestError).toHaveBeenCalledWith(errorResponse);
-  });
-
-  it('call getSuccessOrErrorMessages and put visibily password to false on requestSuccess', () => {
-    spyOn(component, 'getSuccessOrErrorMessages');
-    component.requestSuccess(['SUCCESS']);
-
-    expect(component.showPassword).toBe(false)
-    expect(component.showRepeatedPassword).toBe(false)
-    expect(component.showLoadingSpinner).toBe(false)
-    expect(component.getSuccessOrErrorMessages).toHaveBeenCalledWith(['SUCCESS'], 'success');
-  });
-
-  it('should safe handle error in getSuccessOrErrorMessages', () => {
-    component.getSuccessOrErrorMessages(['Error'], 'error');
-    expect(component.errorService.errorMessages).toEqual(['Error']);
-    expect(component.errorService.successMessages).toEqual([]);
-  });
-
-  it('should safe handle success message in getSuccessOrErrorMessages', () => {
-    component.getSuccessOrErrorMessages(['Success'], 'success');
-    expect(component.errorService.errorMessages).toEqual([]);
-    expect(component.errorService.successMessages).toEqual(['Success']);
-  });
-
-  it('should change password visibility', () => {
+  it('togglePasswordVisibility toggles showPassword and showRepeatedPassword', () => {
+    component.showPassword = false;
     component.togglePasswordVisibility('password');
-    expect(component.showPassword).toBe(true);
+    expect(component.showPassword).toBeTrue();
+    component.togglePasswordVisibility('password');
+    expect(component.showPassword).toBeFalse();
+
+    component.showRepeatedPassword = false;
+    component.togglePasswordVisibility('other');
+    expect(component.showRepeatedPassword).toBeTrue();
   });
 
-  it('should change confirm password visibility', () => {
-    component.togglePasswordVisibility('confirmPassword');
-    expect(component.showRepeatedPassword).toBe(true);
+  it('checkResetPasswords() returns false when passwords match and not empty', () => {
+    component.resetPasswordData.password = '123';
+    component.resetPasswordData.repeated_password = '123';
+    expect(component.checkResetPasswords()).toBeFalse();
   });
 
-  it('return false if password and repeated password are same', () => {
-    component.resetPasswordData = {
-      uid: '123',
-      token: 'abc',
-      password: '1234',
-      repeated_password: '1234'
-    };
-    const result = component.checkResetPasswords();
-    expect(result).toBe(false);
+  it('checkResetPasswords() returns true when empty or different', () => {
+    component.resetPasswordData.password = '';
+    component.resetPasswordData.repeated_password = '';
+    expect(component.checkResetPasswords()).toBeTrue();
+
+    component.resetPasswordData.password = 'a';
+    component.resetPasswordData.repeated_password = 'b';
+    expect(component.checkResetPasswords()).toBeTrue();
   });
 
-  it('return true if password and repeated password are not the same', () => {
-    component.resetPasswordData = {
-      uid: '123',
-      token: 'abc',
-      password: '1234',
-      repeated_password: '4321'
-    };
-    const result = component.checkResetPasswords();
-    expect(result).toBe(true);
+  it('onlyNumbers() recognizes only numeric strings', () => {
+    expect(component.onlyNumbers('12345')).toBeTrue();
+    expect(component.onlyNumbers('12a45')).toBeFalse();
+    expect(component.onlyNumbers('')).toBeFalse();
   });
 
-  it('return true if one password is empty', () => {
-    component.resetPasswordData = {
-      uid: '123',
-      token: 'abc',
-      password: '',
-      repeated_password: '4321'
-    };
-    const result = component.checkResetPasswords();
-    expect(result).toBe(true);
+  describe('submitLogInForm', () => {
+    it('should set showError=false & call sendLogInRequest on valid form', () => {
+      const fakeForm = { valid: true } as unknown as NgForm;
+      spyOn(component, 'sendLogInRequest');
+      component.showError = true;
+
+      component.submitLogInForm(fakeForm);
+
+      expect(component.showError).toBeFalse();
+      expect(component.sendLogInRequest).toHaveBeenCalledWith(component.loginData);
+    });
+
+    it('should set showError=true & not call sendLogInRequest on invalid form', () => {
+      const fakeForm = { valid: false } as unknown as NgForm;
+      spyOn(component, 'sendLogInRequest');
+      component.showError = false;
+
+      component.submitLogInForm(fakeForm);
+
+      expect(component.showError).toBeTrue();
+      expect(component.sendLogInRequest).not.toHaveBeenCalled();
+    });
   });
 
-  it('should return true for numeric string', () => {
-    const result = component.onlyNumbers('12345');
-    expect(result).toBe(true);
+  describe('sendLogInRequest', () => {
+    const resMock = { token: 'xyz' };
+    const errMock = { error: { msg: 'fail' } };
+
+    it('should call requestSuccess and navigate on success', fakeAsync(() => {
+      apiSpy.postLoginOrLogouData.and.returnValue(of(resMock));
+      spyOn(component, 'requestSuccess').and.callThrough();
+
+      component.sendLogInRequest(component.loginData);
+      tick();
+
+      expect(component.requestSuccess).toHaveBeenCalledWith(resMock);
+      expect(routerSpy.navigate).toHaveBeenCalledWith(['/browse']);
+      expect(component.showLoadingSpinner).toBeFalse();
+    }));
+
+    it('should call requestError on error', fakeAsync(() => {
+      apiSpy.postLoginOrLogouData.and.returnValue(throwError(() => errMock));
+      spyOn(component, 'requestError').and.callThrough();
+
+      component.sendLogInRequest(component.loginData);
+      tick();
+
+      expect(component.requestError).toHaveBeenCalledWith(errMock);
+      expect(component.showLoadingSpinner).toBeFalse();
+    }));
   });
 
-  it('should return false for non-numeric string', () => {
-    const result = component.onlyNumbers('123a5');
-    expect(result).toBe(false);
+  describe('sendPostRequest', () => {
+    const successRes = { data: 'ok' };
+    const errorRes = { error: { detail: 'nope' } };
+    const fakeForm = { reset: jasmine.createSpy('reset') } as unknown as NgForm;
+
+    it('should reset form and navigate on reset-password endpoint success', fakeAsync(() => {
+      apiSpy.postData.and.returnValue(of(successRes));
+      spyOn(component, 'requestSuccess').and.callThrough();
+
+      component.sendPostRequest(component.resetPasswordEndpoint, component.resetPasswordData, fakeForm);
+      tick();
+
+      expect(component.requestSuccess).toHaveBeenCalledWith(successRes);
+      expect(routerSpy.navigate).toHaveBeenCalledWith(['/login']);
+      expect(fakeForm.reset).toHaveBeenCalled();
+      expect(component.showLoadingSpinner).toBeFalse();
+    }));
+
+    it('should call requestError on error', fakeAsync(() => {
+      apiSpy.postData.and.returnValue(throwError(() => errorRes));
+      spyOn(component, 'requestError').and.callThrough();
+
+      component.sendPostRequest('anything', {}, fakeForm);
+      tick();
+
+      expect(component.requestError).toHaveBeenCalledWith(errorRes);
+      expect(component.showLoadingSpinner).toBeFalse();
+    }));
   });
-
-
-
-
-
 });

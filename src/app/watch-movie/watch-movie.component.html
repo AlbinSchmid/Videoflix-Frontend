@@ -7,3 +7,5 @@
         <a (click)="safeProgress()" href="/browse"><img src="/img/logo-small.png" alt="videoflix-logo"></a>
     </div>
 </div>
+<app-not-found *ngIf="showNotFound"></app-not-found>
+<app-loading *ngIf="showLoading"></app-loading>

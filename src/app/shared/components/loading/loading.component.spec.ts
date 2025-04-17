@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { CommonModule } from '@angular/common';
-import { LoadingComponent } from '../shared/components/loading/loading.component';
-
+import { LoadingComponent } from './loading.component';
 
 describe('LoadingComponent', () => {
   let component: LoadingComponent;
@@ -33,7 +32,6 @@ describe('LoadingComponent', () => {
     tick(1);
     expect(component.showPopcorn).toBeTrue();
 
-    // Cleanup timer
     component.ngOnDestroy();
   }));
 

@@ -1,9 +1,12 @@
 <div class="background">
+    <div class="loading-containter" *ngIf="loading">
+        <div class="loader header"></div>
+    </div>
     <div class="movie-preview">
         <video class="background-video" #videoRef autoplay playsinline height="auto"></video>
         <div class="overlay-div">
             <mat-icon class="detail-icon close-icon" fontIcon="close" (click)="closeMovieDetail()"></mat-icon>
-            <h2>{{ data.movie.title }}</h2>
+            <h2>{{title }}</h2>
             <div class="bottom-div">
                 <button mat-flat-button [ngStyle]="{'width.px': continueWatching ? '200' : '160'}" (click)="navigateToWatchComponent()"><span><mat-icon fontIcon="play_arrow"></mat-icon>{{ checkIfContinueToMovie() }}</span></button>
                 <mat-icon *ngIf="video" class="detail-icon sound-icon" fontIcon="{{video.muted ? 'volume_off' : 'volume_up'}}" (click)="toggleSoundOfMovie()"></mat-icon>
@@ -12,14 +15,14 @@
     </div>
     <div class="movie-details">
         <div class="details">
-            <p>{{ data.movie.release_year }}</p>
+            <p>{{ releaseYear }}</p>
             <p>{{ movieDuration }}</p>
             <mat-icon fontIcon="hd"></mat-icon>
         </div>
-        <p class="description">{{data.movie.description}}</p>
+        <p class="description">{{description}}</p>
         <div class="license">
-            <p *ngIf="data.movie.author && data.movie.author_url"><mark>Author: </mark><span>{{data.movie.author}}</span> | <a href="{{data.movie.author_url}}">{{data.movie.author_url}}</a></p>
-            <p *ngIf="data.movie.license && data.movie.license_url"><mark>License: </mark><span>{{data.movie.license}} | <a href="{{data.movie.license_url}}">{{data.movie.license_url}}</a></span></p>
+            <p *ngIf="author && authorUrl"><mark>Author: </mark><span>{{author}}</span> | <a href="{{authorUrl}}">{{authorUrl}}</a></p>
+            <p *ngIf="license && licenseUrl"><mark>License: </mark><span>{{license}} | <a href="{{licenseUrl}}">{{licenseUrl}}</a></span></p>
         </div>
     </div>
 </div>

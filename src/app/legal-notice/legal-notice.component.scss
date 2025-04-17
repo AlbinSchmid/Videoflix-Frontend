@@ -1,0 +1,7 @@
+@use './../../styles.scss' as *;
+
+section {
+    background-size: 100% 100%;
+    background-position: 0px 0px,0px 0px;
+    background-image: linear-gradient(315deg, #000000DB 0%, #0026BC00 99%),linear-gradient(135deg, #240039FF 0%, #001E84FF 100%);
+}

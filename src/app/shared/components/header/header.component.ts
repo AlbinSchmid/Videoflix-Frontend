@@ -23,12 +23,17 @@ export class HeaderComponent {
   @Input() browse: boolean = false;
 
 
+  /**
+   * Logs the user out by sending a logout request to the API.
+   * On successful logout, navigates the user to the home page ('/').
+   * If an error occurs during the logout process, it logs the error to the console.
+   *
+   * @returns {void}
+   */
   logout(): void {
     this.apiService.postLoginOrLogouData('logout/', {}).subscribe((response) => {
-      console.log(response);
       this.router.navigate(['/']);
     }, (error) => {
-      console.log(error);
     });
   }
 }

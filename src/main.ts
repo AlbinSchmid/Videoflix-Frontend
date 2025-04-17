@@ -11,10 +11,6 @@ bootstrapApplication(AppComponent, {
   providers: [
     provideRouter(routes),
     provideHttpClient(withInterceptorsFromDi()),
-    provideEnvironmentInitializer(() => {
-      const auth = inject(AuthService);
-      return auth.init();
-    })
   ]
 }).catch(err => console.error(err));
 

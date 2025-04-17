@@ -1,13 +1,15 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { CanActivate, Router } from '@angular/router';
-import { ApiService } from '../services/api.service';
-import { tap, map, catchError } from 'rxjs/operators';
-import { Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+import { from, Observable, of } from 'rxjs';
 import { ErrorService } from '../services/error.service';
+import { AuthService } from '../services/auth.service';
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({ providedIn: 'root' })
 export class AuthGuard implements CanActivate {
-  apiService = inject(ApiService);
+  authService = inject(AuthService);
+  platformId = inject(PLATFORM_ID)
   errorSerice = inject(ErrorService);
   router = inject(Router);
 
@@ -22,13 +24,16 @@ export class AuthGuard implements CanActivate {
    * @returns An `Observable<boolean>` that emits `true` if the route can be activated, 
    *          or `false` if the user is redirected to the login page.
    */
-  canActivate(): Observable<boolean> {
-    return this.apiService.getCheckLoggedin().pipe(
+  canActivate(): Observable<boolean>  {
+    this.authService.isLoading = true;
+    return from(this.authService.init()).pipe(
       map(() => {
-        return true;
+        return this.authService.isAuthenticated;
       }),
-      catchError(() => {
-        this.router.navigate(['/login']);
+      catchError(err => {
+        if (isPlatformBrowser(this.platformId)) {
+          this.router.navigate(['/login']);
+        }
         return of(false);
       })
     );

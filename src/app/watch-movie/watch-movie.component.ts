@@ -3,11 +3,12 @@ import { ChangeDetectorRef, Component, ElementRef, inject, Inject, PLATFORM_ID, 
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../shared/services/api.service';
 import { MatIconModule } from '@angular/material/icon';
+import { BrowseService } from '../shared/services/browse.service';
+import { NotFoundComponent } from "../not-found/not-found.component";
+import { LoadingComponent } from '../shared/components/loading/loading.component';
 import videojs, { VideoJsPlayer } from 'video.js';
 import Hls from 'hls.js';
 import 'videojs-thumbnails';
-import { BrowseService } from '../shared/services/browse.service';
-import { finished } from 'stream';
 
 
 declare module 'video.js' {
@@ -20,8 +21,11 @@ declare module 'video.js' {
   selector: 'app-watch-movie',
   imports: [
     MatIconModule,
-    CommonModule
-  ],
+    CommonModule,
+    NotFoundComponent,
+    NotFoundComponent,
+    LoadingComponent,
+],
   templateUrl: './watch-movie.component.html',
   styleUrl: './watch-movie.component.scss'
 })
@@ -45,8 +49,8 @@ export class WatchMovieComponent {
 
   progressMovie: any = {};
   movieTitle: string = ''
-  proccessMovie: boolean = false
-
+  showNotFound: boolean = false;
+  showLoading: boolean = true;
 
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) { }
@@ -206,13 +210,16 @@ export class WatchMovieComponent {
     const slugEndpoint = this.movieProgressEndpoint + slug + '/';
     this.apiService.getData(slugEndpoint).subscribe(
       (res) => {
+        this.showLoading = false;
+        this.showNotFound = false;
         this.progressMovie = res;
         this.movieTitle = res.movie.title;
         this.player.currentTime(res.progress_seconds);
         this.getVideoElementAndMovieHlsUrl();
       },
       (err) => {
-        console.error(err);
+        this.showLoading = false;
+        this.showNotFound = true;
       }
     )
   }
@@ -230,11 +237,8 @@ export class WatchMovieComponent {
    */
   sendPatchRequest(data: object, slug: string): void {
     const slugEndpoint = this.movieProgressEndpoint + slug + '/';
-    this.apiService.patchData(slugEndpoint, data).subscribe(
-      (err) => {
-        console.error(err);
-      }
-    )
+    this.showLoading = true;
+    this.apiService.patchData(slugEndpoint, data).subscribe();
   }
 
   /**

@@ -26,15 +26,23 @@ export class MovieDetailComponent {
   data = inject(MAT_DIALOG_DATA);
 
   movieProgressEndpoint: string = 'movies/progress/';
+  movieDuration: string = '';
+  title: string = '';
+  releaseYear: string = '';
+  description: string = '';
+  author: string = '';
+  authorUrl: string = '';
+  license: string = '';
+  licenseUrl: string = '';
   continueWatching: boolean = false;
   allreadyWatched: boolean = false;
-
+  loading: boolean = true;
 
   @ViewChild('videoRef', { static: true }) videoElementRef!: ElementRef<HTMLVideoElement>;
 
   video: HTMLVideoElement | undefined;
-  movieDuration: string = '';
   player!: any;
+
 
   /**
    * Lifecycle hook that is called after Angular has fully initialized
@@ -55,29 +63,71 @@ export class MovieDetailComponent {
     setTimeout(() => {
       this.getVideoElementAndMovieHlsUrl();
       this.loadMoviesProgress();
+      this.setStringsFromData();
     });
   }
 
   /**
-   * Loads the progress of movies being watched by the user.
-   * This method fetches data from the `continueWatchingEndpoint` using the `apiService`
-   * and checks if the current movie exists in the response. If the movie exists,
-   * it sets the `continueWatching` flag to `true`, otherwise to `false`.
+   * Sets the properties of the component based on the provided data.
+   * This method extracts relevant information from the `data` object
+   * and assigns it to the component's properties for display in the template.
+   *
+   * @remarks
+   * The `data` object is expected to contain a `movie` property with various
+   * attributes such as title, release year, description, author, license,
+   * and their respective URLs.
+   *
+   * @returns {void} This method does not return a value.
+   */
+  setStringsFromData(): void {
+    this.title = this.data.movie.title;
+    this.releaseYear = this.data.movie.release_year;
+    this.description = this.data.movie.description;
+    this.author = this.data.movie.author;
+    this.authorUrl = this.data.movie.author_url;
+    this.license = this.data.movie.license;
+    this.licenseUrl = this.data.movie.license_url;
+  }
+
+  /**
+   * Loads the movie progress from the server by making an API call to the specified endpoint.
+   * It subscribes to the response and calls the `filterResponse` method to process the data.
+   *
+   * @remarks
+   * The `loading` property is set to true while the data is being fetched,
+   * and it is set to false once the data has been processed or if an error occurs.
    *
    * @returns {void} This method does not return a value.
    */
   loadMoviesProgress(): void {
     this.apiService.getData(this.movieProgressEndpoint).subscribe(
       (response) => {
-        if (response) {
-          const movieDetailId = this.data.movie.id
-          const existContinue = response.some((item: any) => item.id === movieDetailId && item.finished === false);
-          const existFinished = response.some((item: any) => item.id === movieDetailId && item.finished === true);
-          existContinue ? this.continueWatching = true : this.continueWatching = false;
-          existFinished ? this.allreadyWatched = true : this.allreadyWatched = false;
-        };
+        this.filterResponse(response);
+      },
+      (error) => {
+        this.loading = false;
       }
     )
+  }
+
+  /**
+   * Filters the response data to check if the current movie is already watched or in progress.
+   * It updates the `continueWatching` and `allreadyWatched` flags based on the response data.
+   *
+   * @param response - The response data from the API call.
+   *                  It is expected to be an array of objects with properties `id` and `finished`.
+   *
+   * @returns {void} This method does not return a value.
+   */
+  filterResponse(response: any): void {
+    if (response) {
+      const movieDetailId = this.data.movie.id
+      const existContinue = response.some((item: any) => item.id === movieDetailId && item.finished === false);
+      const existFinished = response.some((item: any) => item.id === movieDetailId && item.finished === true);
+      existContinue ? this.continueWatching = true : this.continueWatching = false;
+      existFinished ? this.allreadyWatched = true : this.allreadyWatched = false;
+      this.loading = false;
+    };
   }
 
   /**
@@ -204,7 +254,7 @@ export class MovieDetailComponent {
       progress_seconds: 0,
       finished: false,
     }
-    console.log(data)
+    console.log(this.continueWatching, this.allreadyWatched)
     this.apiService.postData(this.movieProgressEndpoint, data).subscribe()
   }
 

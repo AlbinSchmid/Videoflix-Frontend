@@ -194,7 +194,7 @@ export class FormComponent {
     this.showPassword = false;
     this.showRepeatedPassword = false;
     this.showLoadingSpinner = false;
-    this.getSuccessOrErrorMessages(res, 'success');
+    this.errorService.getSuccessOrErrorMessages(res, 'success')
   }
 
   /**
@@ -205,31 +205,8 @@ export class FormComponent {
    *              an `error` property with the details of the error.
    */
   requestError(err: any): void {
-    console.error(err);
-    this.getSuccessOrErrorMessages(err.error, 'error');
+    this.errorService.getSuccessOrErrorMessages(err.error, 'error')
     this.showLoadingSpinner = false;
-  }
-
-  /**
-   * Processes an array of messages and categorizes them as either error or success messages
-   * based on the specified type. Updates the `errorMessages` or `successMessages` properties
-   * of the `errorService` accordingly.
-   *
-   * @param messages - An array of messages to be processed. Each message can either be a string
-   *                   or an array of strings.
-   * @param type - A string indicating the type of messages to process. Should be either `'error'`
-   *               or `'success'`.
-   */
-  getSuccessOrErrorMessages(messages: string[], type: string): void {
-    this.errorService.errorMessages = [];
-    this.errorService.successMessages = [];
-    for (const key in messages) {
-      if (Array.isArray(messages[key])) {
-        type === 'error' ? this.errorService.errorMessages.push(...messages[key]) : this.errorService.successMessages.push(...messages[key]);
-      } else if (typeof messages[key] === 'string') {
-        type === 'error' ? this.errorService.errorMessages.push(messages[key]) : this.errorService.successMessages.push(messages[key]);
-      }
-    }
   }
 
   /**

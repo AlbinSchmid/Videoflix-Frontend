@@ -19,14 +19,20 @@ export class CategoryComponent {
   el = inject(ElementRef);
   renderer = inject(Renderer2);
 
-  @Input() category: any;
+  @Input() category: { genre: string, movies: any[] } = { genre: '', movies: [] };
   @Output() muteBackgroundVideo = new EventEmitter<boolean>();
 
   rotateX: number = 0;
   rotateY: number = 0;
   effectIntensity: number = 8;
   animationFrameId: number | null = null;
+  
 
+  /**
+   * Lifecycle hook that is called after Angular has initialized the component.
+   * This method is used to perform component initialization logic.
+   * Specifically, it sets the category name by invoking the `setCategoryName` method.
+   */
   ngOnInit(): void {
     this.setCategoryName();
   }
@@ -49,7 +55,7 @@ export class CategoryComponent {
    *
    * @param movie - An object representing the movie to display in the detail dialog.
    */
-  openMovieDetail(movie: {movie: object}): void {
+  openMovieDetail(movie: { movie: object }): void {
     this.muteBackgroundVideo.emit(true);
     this.dialog.open(MovieDetailComponent, {
       autoFocus: false,
