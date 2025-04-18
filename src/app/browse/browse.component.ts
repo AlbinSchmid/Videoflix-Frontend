@@ -10,6 +10,7 @@ import { Router } from '@angular/router';
 import { BrowseService } from '../shared/services/browse.service';
 import videojs from 'video.js';
 import Hls from 'hls.js';
+import { WindowService } from '../shared/services/window.service';
 
 @Component({
   selector: 'app-browse',
@@ -29,6 +30,7 @@ export class BrowseComponent {
   router = inject(Router);
   browseService = inject(BrowseService);
   apiService = inject(ApiService);
+  windowService = inject(WindowService)
   @ViewChild('backgroundMovie', { static: true }) backgroundMovieRef!: ElementRef<HTMLVideoElement>;
 
   movieSections: { genre: string; movies: any[] }[] = [];
@@ -40,6 +42,18 @@ export class BrowseComponent {
 
   moviesEndpoint: string = 'movies/';
   video: any = null;
+  windowWidth: number = 0;
+
+  /**
+   * Lifecycle hook that is called after Angular has initialized the component.
+   * Subscribes to the `width$` observable from the `WindowService` to update the
+   * `windowWidth` property whenever the window width changes.
+   */
+  ngOnInit(): void {
+    this.windowService.width.subscribe(width => {
+      this.windowWidth = width;
+    });
+  }
 
   
   /**

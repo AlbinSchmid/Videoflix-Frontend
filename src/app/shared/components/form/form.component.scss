@@ -2,25 +2,25 @@
 
 .content {
     @include flex-position($fd: column);
-    background-color: white;
-    border-radius: 48px;
+    background-color: #181818;
+    border-radius: clamp(2.5rem, 2.4rem + 0.5vw, 3rem);
     width: 520px;
-    gap: 32px;
-    padding: 43px 56px;
+    gap: clamp(1.25rem, 1.1rem + 0.75vw, 2rem);
+    padding: clamp(2rem, 1.8625rem + 0.6875vw, 2.6875rem) clamp(1.5rem, 1.1rem + 2vw, 3.5rem);
 
     h1 {
-        @include font-style($fs: 48px, $fw: 700);
-        color: $color-blue;
+        @include font-style($fs: clamp(2.5rem, 2.4rem + 0.5vw, 3rem), $fw: 700);
+        color: white;
     }
 
     p {
-        @include font-style($fw: 500);
-        color: black;
+        @include font-style($fs: clamp(1rem, 0.975rem + 0.125vw, 1.125rem), $fw: 500);
+        color: white;
     }
 
     a {
-        @include font-style($fw: 700);
-        color: $color-blue;
+        @include font-style($fs: clamp(1rem, 0.975rem + 0.125vw, 1.125rem), $fw: 700);
+        color: white;
 
         &:hover {
             text-decoration: underline;
@@ -43,7 +43,7 @@ form {
 
         &:-webkit-autofill {
             transition: background-color 9999s ease-in-out 0s;
-            -webkit-text-fill-color: $color-blue;
+            -webkit-text-fill-color: white;
         }
     }
 
@@ -52,7 +52,7 @@ form {
         width: 100%;
         border: 1px solid $color-blue;
         padding: 0;
-        padding-right: 24px;
+        padding-right: clamp(1rem, 0.9rem + 0.5vw, 1.5rem);
 
         input {
             border: none;
@@ -66,9 +66,15 @@ form {
     }
 
     button {
-        @include font-style($fw: 500);
+        @include font-style($fs: clamp(1rem, 0.975rem + 0.125vw, 1.125rem), $fw: 500);
         padding: 24px 28px;
-        min-width: 160px;
-        min-height: 50px;
+        min-width: clamp(7.5rem, 7rem + 2.5vw, 10rem);
+        min-height: clamp(0rem, -0.625rem + 3.125vw, 3.125rem);
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .content {
+        width: 100%;
     }
 }

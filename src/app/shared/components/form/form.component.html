@@ -14,11 +14,18 @@
                 enter a valid email address.</span>
             }
         </label>
-        <label class="input-blue password-wrapper">
-            <input type="{{showPassword ? 'text' : 'password'}}" class="input-blue" placeholder="Password"
-                [(ngModel)]="loginData.password" name="passwordLogin">
-            <mat-icon (click)="togglePasswordVisibility('password')"
-                fontIcon="{{ showPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
+        <label class="label-input">
+            <div class="input-blue password-wrapper">
+                <input type="{{showPassword ? 'text' : 'password'}}" class="input-blue" placeholder="Password"
+                    [(ngModel)]="loginData.password" #passwordLogIn="ngModel" name="passwordLogin" name="passwordLogin" required>
+                <mat-icon (click)="togglePasswordVisibility('password')"
+                    fontIcon="{{ showPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
+            </div>
+            @if (passwordLogIn.invalid && passwordLogIn.touched || showError && passwordLogIn.invalid) {
+            <span  class="span-error"><mat-icon
+                    fontIcon="warning"></mat-icon>Please
+                enter the password.</span>
+            }
         </label>
         <button type="submit" mat-flat-button [disabled]="showLoadingSpinner">
             <mat-spinner *ngIf="showLoadingSpinner"></mat-spinner>
@@ -115,17 +122,19 @@
     <form (submit)="submitForm(form, resetPasswordEndpoint, resetPasswordData)" #form="ngForm">
         <label class="label-input">
             <div class="input-blue password-wrapper">
-                <input type="{{showPassword ? 'text' : 'password'}}" class="input-blue" placeholder="Enter a Password" pattern="^(?!\d+$).+" minlength="8" required
-                    [(ngModel)]="resetPasswordData.password" name="password" #passwordResetPassword="ngModel">
+                <input type="{{showPassword ? 'text' : 'password'}}" class="input-blue" placeholder="Enter a Password"
+                    pattern="^(?!\d+$).+" minlength="8" required [(ngModel)]="resetPasswordData.password"
+                    name="password" #passwordResetPassword="ngModel">
                 <mat-icon (click)="togglePasswordVisibility('password')"
                     fontIcon="{{ showPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
             </div>
-            @if (passwordResetPassword.invalid && passwordResetPassword.touched || showError && passwordResetPassword.invalid) {
+            @if (passwordResetPassword.invalid && passwordResetPassword.touched || showError &&
+            passwordResetPassword.invalid) {
             <span *ngIf="passwordResetPassword.value?.length < 8 && passwordResetPassword.value?.length > 0"
                 class="span-error"><mat-icon fontIcon="warning"></mat-icon>The
                 password must be at least 8 characters long.</span>
-            <span *ngIf="passwordResetPassword.value?.length == 0 || !passwordResetPassword.value" class="span-error"><mat-icon
-                    fontIcon="warning"></mat-icon>Please
+            <span *ngIf="passwordResetPassword.value?.length == 0 || !passwordResetPassword.value"
+                class="span-error"><mat-icon fontIcon="warning"></mat-icon>Please
                 enter a valid password.</span>
             <span *ngIf="passwordResetPassword.value?.length > 7 && onlyNumbers(passwordResetPassword.value)"
                 class="span-error"><mat-icon fontIcon="warning"></mat-icon> The password must not contain only
@@ -135,15 +144,17 @@
         <label class="label-input">
             <div class="input-blue password-wrapper">
                 <input type="{{showRepeatedPassword ? 'text' : 'password'}}" class="input-blue"
-                    placeholder="Confirm Password" [(ngModel)]="resetPasswordData.repeated_password" required minlength="8" #repeatedPasswordResetPassword="ngModel"
-                    name="confirmPassword">
+                    placeholder="Confirm Password" [(ngModel)]="resetPasswordData.repeated_password" required
+                    minlength="8" #repeatedPasswordResetPassword="ngModel" name="confirmPassword">
                 <mat-icon (click)="togglePasswordVisibility('confirm-password')"
                     fontIcon="{{ showRepeatedPassword ? 'visibility_off' : 'visibility' }}"></mat-icon>
             </div>
-            @if (repeatedPasswordResetPassword.value != passwordResetPassword.value && repeatedPasswordResetPassword.touched ||
+            @if (repeatedPasswordResetPassword.value != passwordResetPassword.value &&
+            repeatedPasswordResetPassword.touched ||
             showError && !repeatedPasswordResetPassword.value || repeatedPasswordResetPassword.touched &&
             !repeatedPasswordResetPassword.value) {
-            <span *ngIf="repeatedPasswordResetPassword.value != passwordResetPassword.value || !repeatedPasswordResetPassword.value"
+            <span
+                *ngIf="repeatedPasswordResetPassword.value != passwordResetPassword.value || !repeatedPasswordResetPassword.value"
                 class="span-error"><mat-icon fontIcon="warning"></mat-icon>Passwords must match.</span>
             }
         </label>

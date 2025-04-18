@@ -4,6 +4,9 @@
     @include flex-position($jc: flex-start);
     border-radius: 20px;
     background-color: $color-blue;
+    height: 80px;
+    width: 540px;
+    animation: left-to-right 250ms ease-in-out;
 
     .color-div {
         border-radius: 20px 0 0 20px;
@@ -15,6 +18,29 @@
         @include flex-position($jc: space-between);
         width: 100%;
         padding: 10px 20px;
+        gap: 14px;
+    }
+
+
+    @keyframes left-to-right {
+        0% {
+            transform: translateX(-100%);
+        }
+
+        100% {
+            transform: translateX(0);
+        }
+    }
+
+    
+    @keyframes bottom-to-top {
+        0% {
+            transform: translateY(100%);
+        }
+
+        100% {
+            transform: translateY(0);
+        }
     }
 }
 
@@ -57,3 +83,45 @@
     }
 }
 
+.background-mobile-div {
+    @include flex-position($ai: flex-end);
+    background-color: rgba($color: #000000, $alpha: 0.4);
+    height: 100vh;
+}
+
+@media screen and (max-width: 600px) {
+
+    .main-div {
+        @include flex-position($fd: column);
+        background-color: transparent;
+        width: 100%;
+        height: auto;
+        border-radius: 0 0 0;
+        padding: 0;
+        animation: bottom-to-top 250ms ease-in-out;
+
+        .color-div {
+            height: 16px;
+            width: 100%;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .content {
+            padding: clamp(1.25rem, -0.1786rem + 7.1429vw, 2.5rem) clamp(1.125rem, 0.6964rem + 2.1429vw, 1.5rem);
+            background-color: $color-blue;
+        }
+    }
+
+    .left-part {
+        width: 100%;
+        p {
+            width: 100%;
+            text-align: center;
+        }
+    }
+
+    .app-error-message {
+        bottom: 0 !important;
+        left: 0 !important;
+    }
+}

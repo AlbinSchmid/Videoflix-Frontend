@@ -11,14 +11,14 @@ app-header, app-footer {
 
 .content {
     @include flex-position($fd: column);
-    gap: 32px;
+    gap: clamp(1.5rem, 1.4rem + 0.5vw, 2rem);
 
     h1 {
-        @include font-style($fs: 48px, $fw: 700);
+        @include font-style($fs: clamp(2.25rem, 2.1rem + 0.75vw, 3rem), $fw: 700);
     }
 
     p {
-        @include font-style();
+        @include font-style($fs: clamp(1rem, 0.975rem + 0.125vw, 1.125rem));
     }
 
     form {
@@ -26,7 +26,7 @@ app-header, app-footer {
         gap: 16px;
 
         input {
-            @include font-style();
+            @include font-style($fs: clamp(1rem, 0.975rem + 0.125vw, 1.125rem));
             border-radius: 40px;
             width: 360px;
             height: 48px;
@@ -34,9 +34,9 @@ app-header, app-footer {
             border-radius: 40px;
             padding: 12px 24px;
             margin-bottom: 4px;
-    
+
             &::placeholder {
-                @include font-style();
+                @include font-style($fs: clamp(1rem, 0.975rem + 0.125vw, 1.125rem));
                 color: white;
             }
         }
@@ -48,11 +48,37 @@ app-header, app-footer {
         .correct {
             border-color: #00cc00 !important;
         }
-    
+
         button {
-            @include font-style($fw: 700);
-            min-height: 48px;
-            min-width: 130px;
+            @include font-style($fs: clamp(1rem, 0.975rem + 0.125vw, 1.125rem), $fw: 700);
+            min-height: 49px;
+            padding: 0 26px;
+            margin-top: -3px;
         }
+    }
+}
+
+@media screen and (max-width: 600px) {
+    input {
+        width: 300px !important;
+    }
+
+}
+
+@media screen and (max-width: 500px) {
+    .content {
+        form {
+            @include flex-position($fd: column);
+
+            button {
+                margin-top: 10px;
+            }
+        }
+    }
+
+    form,
+    label,
+    input {
+        width: 100% !important;
     }
 }

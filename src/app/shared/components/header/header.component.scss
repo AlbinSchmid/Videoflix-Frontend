@@ -8,10 +8,13 @@ header {
         height: 32px;
     }
 
+    .videoflix-logo-small {
+        height: clamp(2.125rem, 1.95rem + 0.875vw, 3rem);
+    }
 
     .btn {
-        @include font-style($fw: 600);    
-        padding: 22px;
+        @include font-style($fs: clamp(1rem, 0.975rem + 0.125vw, 1.125rem),$fw: 600);    
+        padding: clamp(1.25rem, 1.225rem + 0.125vw, 1.375rem);
         
         span {
             @include flex-position();
@@ -23,5 +26,26 @@ header {
         @include flex-position();
         margin-top: 1px;
         font-size: 24px;
+    }
+
+    .arrow-back-icon {
+        @include font-style($fs: 48px);
+        width: 50px;
+        height: 50px;
+        cursor: pointer;
+        
+        &:hover {
+            animation: left-animation 300ms ease-in-out forwards;
+        }
+
+        @keyframes left-animation {
+            0% {
+                transform: translateX(0%);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+        }
     }
 }

@@ -4,11 +4,13 @@ import { MatDialog } from '@angular/material/dialog';
 import { MovieDetailComponent } from '../movie-detail/movie-detail.component';
 import { EventEmitter } from '@angular/core';
 import { obj } from 'video.js/dist/types/utils/obj';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-category',
   imports: [
-    CommonModule
+    CommonModule,
+    MatIconModule
   ],
   templateUrl: './category.component.html',
   styleUrl: './category.component.scss',
@@ -19,6 +21,8 @@ export class CategoryComponent {
   el = inject(ElementRef);
   renderer = inject(Renderer2);
 
+  @ViewChild('scrollContainer', { static: true }) scrollContainer!: ElementRef;
+
   @Input() category: { genre: string, movies: any[] } = { genre: '', movies: [] };
   @Output() muteBackgroundVideo = new EventEmitter<boolean>();
 
@@ -26,7 +30,37 @@ export class CategoryComponent {
   rotateY: number = 0;
   effectIntensity: number = 8;
   animationFrameId: number | null = null;
+
+  isAtStart: boolean = true;
+  isAtEnd: boolean = false;
+
+  ngAfterViewInit(): void {+
+    this.checkScrollPosition();
+  }
+
+  checkScrollPosition(): void {
+    const container = this.scrollContainer.nativeElement;
+    const maxScrollLeft = container.scrollWidth - container.clientWidth;
+
+    this.isAtStart = container.scrollLeft === 0;
+    this.isAtEnd = container.scrollLeft >= maxScrollLeft;
+  }
+
+
+  scrollMovies(direction: 'left' | 'right') {
+    const container = this.scrollContainer.nativeElement;
+    const scrollAmount = container.offsetWidth / 6;
   
+    if (direction === 'right') {
+      container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    } else {
+      container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+    }
+  
+    // Delay, damit das Scrollen abgeschlossen ist
+    setTimeout(() => this.checkScrollPosition(), 10);
+  }
+
 
   /**
    * Lifecycle hook that is called after Angular has initialized the component.

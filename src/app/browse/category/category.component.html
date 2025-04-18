@@ -1,12 +1,17 @@
-<div>
+<div class="category-div">
     <h3>{{ firstLetterBig(category.genre)}}</h3>
-    <div class="movies-div">
-        @for (movie of category.movies; track $index) {
-        <div (mousemove)="onMouseMove($event)" (click)="openMovieDetail(movie)" (mouseleave)="onMouseLeave($event)"
-            class="movie-cover-div" #movieCard>
-            <img src="{{ movie.movie_cover || movie.movie.movie_cover }}" alt="movie-cover">
+    <div class="scroll-wrapper">
+        <button class="scroll-btn left" *ngIf="!isAtStart" (click)="scrollMovies('left')"><mat-icon fontIcon="chevron_left"></mat-icon></button>
+        <div class="movies-div" #scrollContainer>
+            @for (movie of category.movies; track $index) {
+            <div (mousemove)="onMouseMove($event)" (click)="openMovieDetail(movie)" (mouseleave)="onMouseLeave($event)"
+                class="movie-cover-div" #movieCard>
+                <img src="{{ movie.movie_cover || movie.movie.movie_cover }}" alt="movie-cover">
+            </div>
+            }
         </div>
-        }
-
+        <button class="scroll-btn right" (click)="scrollMovies('right')" *ngIf="!isAtEnd"><mat-icon fontIcon="chevron_right"></mat-icon></button>
     </div>
+    
+
 </div>

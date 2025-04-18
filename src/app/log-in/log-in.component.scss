@@ -2,5 +2,12 @@
 
 section {
     @include flex-position($jc: space-between, $fd: column);
-    @include background-img($url: url(./../../../public/img/login-background.png))
+    @include background-img($url: url(./../../../public/img/login-background.png));
+    position: relative;
+    overflow: hidden;
+}
+
+app-form {
+    @include flex-position();
+    width: 100%;
 }

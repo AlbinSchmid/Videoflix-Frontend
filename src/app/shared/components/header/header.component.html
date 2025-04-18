@@ -1,11 +1,12 @@
 <header>
-    <a href="#" *ngIf="!browse">
+    <a href="#" *ngIf="!browse && windowWidth > 600">
         <img src="/img/logo.png" alt="videoflix-logo">
     </a>
-    <a *ngIf="!login && !browse" class="btn" href="/login" mat-flat-button>Log in</a>
-
-    <a href="#" *ngIf="browse">
-        <img src="/img/logo-small.png" alt="videoflix-logo" [ngStyle]="{'height.px': 48}">
+    <a href="#" *ngIf="browse || windowWidth <= 600">
+        <img src="/img/logo-small.png" class="videoflix-logo-small" alt="videoflix-logo">
     </a>
+    <a *ngIf="!login && !browse && !legalNoticeOrPrivacyPolicy" class="btn" href="/login" mat-flat-button>Log in</a>
+
     <button (click)="logout()" *ngIf="browse" class="btn" mat-flat-button><span><mat-icon fontIcon="logout"></mat-icon>Log out</span></button>
+    <mat-icon *ngIf="legalNoticeOrPrivacyPolicy" (click)="goToPreviosPage()" fontIcon="arrow_back" class="arrow-back-icon"></mat-icon>
 </header>

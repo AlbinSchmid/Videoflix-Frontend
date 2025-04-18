@@ -1,6 +1,6 @@
 @if (errorService.errorMessages.length > 0) {
     @for (error of errorService.errorMessages; track $index) {
-        <div class="main-div app-error-message" [ngStyle]="{'margin-bottom.px': $index == 0 ? 0 : $index * 100}">
+        <div class="main-div" [ngStyle]="{'margin-bottom.px': $index == 0 ? 0 : $index * 100}" *ngIf="windowWidth > 600">
             <div class="color-div" [ngStyle]="{'background-color': 'red'}"></div>
             <div class="content">
                 <div class="left-part">
@@ -8,15 +8,29 @@
                     <p>{{ error }}</p>
                 </div>
                 <div class="right-part">
-                    <div class="white-line-div"></div>
+                    <div class="white-line-div" *ngIf="windowWidth > 600"></div>
                     <mat-icon (click)="errorService.errorMessages.splice($index, 1)" fontIcon="close"></mat-icon>
+                </div>
+            </div>
+        </div>
+        <div class="background-mobile-div" (click)="errorService.errorMessages.splice($index, 1)" *ngIf="windowWidth <= 600">
+            <div class="main-div" [ngStyle]="{'margin-bottom.px': $index == 0 ? 0 : $index * 100}">
+                <div class="color-div" [ngStyle]="{'background-color': 'red'}"></div>
+                <div class="content">
+                    <div class="left-part">
+                        <mat-icon fontIcon="error"></mat-icon>
+                        <p>{{ error }}</p>
+                    </div>
+                    <div class="right-part">
+                        <mat-icon (click)="errorService.errorMessages.splice($index, 1)" fontIcon="close"></mat-icon>
+                    </div>
                 </div>
             </div>
         </div>
     }
 } @else if (errorService.successMessages.length > 0) {
     @for (message of errorService.successMessages; track $index) {
-        <div class="main-div app-error-message" [ngStyle]="{'margin-bottom.px': $index == 0 ? 0 : $index * 100}">
+        <div class="main-div" [ngStyle]="{'margin-bottom.px': $index == 0 ? 0 : $index * 100}" *ngIf="windowWidth > 600">
             <div class="color-div" [ngStyle]="{'background-color': 'green'}"></div>
             <div class="content">
                 <div class="left-part">
@@ -26,6 +40,20 @@
                 <div class="right-part">
                     <div class="white-line-div"></div>
                     <mat-icon (click)="errorService.successMessages.splice($index, 1)" fontIcon="close"></mat-icon>
+                </div>
+            </div>
+        </div>
+        <div class="background-mobile-div" (click)="errorService.successMessages.splice($index, 1)" *ngIf="windowWidth <= 600">
+            <div class="main-div" [ngStyle]="{'margin-bottom.px': $index == 0 ? 0 : $index * 100}">
+                <div class="color-div" [ngStyle]="{'background-color': 'green'}"></div>
+                <div class="content">
+                    <div class="left-part">
+                        <mat-icon fontIcon="error"></mat-icon>
+                        <p>{{ message }}</p>
+                    </div>
+                    <div class="right-part">
+                        <mat-icon (click)="errorService.successMessages.splice($index, 1)" fontIcon="close"></mat-icon>
+                    </div>
                 </div>
             </div>
         </div>

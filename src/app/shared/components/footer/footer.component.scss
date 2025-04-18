@@ -2,10 +2,10 @@
 
 footer {
     @include flex-position();
-    gap: 48px;
+    gap: clamp(1.5rem, 1.2rem + 1.5vw, 3rem);
 
     a {
-        @include font-style($fw: 500);
+        @include font-style( $fs:clamp(1rem, 0.975rem + 0.125vw, 1.125rem), $fw: 500);
         transition: 125ms;
 
         &:hover {

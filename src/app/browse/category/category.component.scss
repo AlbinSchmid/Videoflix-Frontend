@@ -2,34 +2,90 @@
 
 h3 {
     @include font-style($fs: 28px, $fw: 700);
-    margin-bottom: 12px;
+    margin-left: clamp(0.5rem, -0.6rem + 5.5vw, 6rem);
+}
+
+.category-div {
+    width: 100vw;
+    margin: 0 clamp(-6rem, calc(-5.5vw + 0.6rem), -0.5rem);
+}
+
+.scroll-wrapper {
+    @include flex-position($jc: flex-start, $ai: center);
+    position: relative;
+    
+    .scroll-btn {
+        position: absolute;
+        height: 100%;
+        border: none;
+        background-color: transparent;
+        cursor: pointer;
+        z-index: 10;
+        display: none;
+
+        mat-icon {
+            @include font-style($fs: 40px, $fw: 700);
+            transition: all 125ms ease-out;
+        }
+
+        &.left {
+            left: 0;
+            background-size: 100% 100%;
+            background-position: 0px 0px;
+            background-image: linear-gradient(90deg, #000000D4 1%, #02000000 99%);
+        }
+
+        &.right {
+            right: 0;
+            background-size: 100% 100%;
+            background-position: 0px 0px;
+            background-image: linear-gradient(90deg, #02000000 1%, #000000D4 99%);
+        }
+
+        &:hover > mat-icon {
+            scale: 1.4;
+        }
+    }
+
+    &:hover > .scroll-btn {
+        display: block;
+    }
 }
 
 .movies-div {
     @include flex-position($jc: flex-start, $ai: center);
     gap: 12px;
-}
+    padding: 10px clamp(0.5rem, -0.6rem + 5.5vw, 6rem);
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    overflow-x: auto;
+    max-width: 100vw;
 
-.movie-cover-div {
-    max-width: 300px;
-    max-height: 170px;
-    height: 170px;
-    width: 300px;
-    border-radius: 6px;
-    cursor: pointer;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    &::-webkit-scrollbar {
+        display: none;
+    }
 
-    img {
-        width: 100%;
-        height: 100%;
+    
+
+    .movie-cover-div {
+        flex: 0 0 calc(100% / 6); // genau 4 Elemente sichtbar
+        scroll-snap-align: center;
+        min-width: 0;
         border-radius: 6px;
-        object-fit: cover;
-    }
+        cursor: pointer;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 
-    &:hover {
-        transition: transform 300ms ease-out;
-    }
+        img {
+            width: 100%;
+            border-radius: 6px;
+            object-fit: cover;
+        }
 
+        &:hover {
+            transition: transform 300ms ease-out;
+        }
+    }
 }
 
 .leave-transition {
