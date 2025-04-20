@@ -6,12 +6,11 @@
             @for (movie of category.movies; track $index) {
             <div (mousemove)="onMouseMove($event)" (click)="openMovieDetail(movie)" (mouseleave)="onMouseLeave($event)"
                 class="movie-cover-div" #movieCard>
-                <img src="{{ movie.movie_cover || movie.movie.movie_cover }}" alt="movie-cover">
+                <img *ngIf="windowWidth > 600" src="{{ movie.movie_cover || movie.movie.movie_cover }}" alt="movie-cover">
+                <img *ngIf="windowWidth <= 600" src="{{ movie.movie_cover_phone || movie.movie.movie_cover_phone }}" alt="movie-cover">
             </div>
             }
         </div>
         <button class="scroll-btn right" (click)="scrollMovies('right')" *ngIf="!isAtEnd"><mat-icon fontIcon="chevron_right"></mat-icon></button>
     </div>
-    
-
 </div>

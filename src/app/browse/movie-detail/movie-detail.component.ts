@@ -7,6 +7,7 @@ import { Router } from '@angular/router';
 import { BrowseService } from '../../shared/services/browse.service';
 import { ApiService } from '../../shared/services/api.service';
 import videojs, { VideoJsPlayer } from 'video.js';
+import { WindowService } from '../../shared/services/window.service';
 
 @Component({
   selector: 'app-movie-detail',
@@ -19,6 +20,7 @@ import videojs, { VideoJsPlayer } from 'video.js';
   styleUrl: './movie-detail.component.scss'
 })
 export class MovieDetailComponent {
+  windowService = inject(WindowService)
   apiService = inject(ApiService);
   browseService = inject(BrowseService);
   dialogRef = inject(MatDialogRef<MovieDetailComponent>);
@@ -42,7 +44,19 @@ export class MovieDetailComponent {
 
   video: HTMLVideoElement | undefined;
   player!: any;
+  windowWidth: number = 0;
 
+
+  /**
+   * Lifecycle hook that is called after Angular has initialized all data-bound properties of a directive.
+   * Subscribes to the `width` observable from the `windowService` to update the `windowWidth` property
+   * whenever the window width changes.
+   */
+  ngOnInit(): void {
+    this.windowService.width.subscribe(width => {
+      this.windowWidth = width;
+    });
+  }
 
   /**
    * Lifecycle hook that is called after Angular has fully initialized
@@ -122,8 +136,8 @@ export class MovieDetailComponent {
   filterResponse(response: any): void {
     if (response) {
       const movieDetailId = this.data.movie.id
-      const existContinue = response.some((item: any) => item.id === movieDetailId && item.finished === false);
-      const existFinished = response.some((item: any) => item.id === movieDetailId && item.finished === true);
+      const existContinue = response.some((item: any) => item.movie.id === movieDetailId && item.finished === false);
+      const existFinished = response.some((item: any) => item.movie.id === movieDetailId && item.finished === true);
       existContinue ? this.continueWatching = true : this.continueWatching = false;
       existFinished ? this.allreadyWatched = true : this.allreadyWatched = false;
       this.loading = false;
@@ -254,8 +268,7 @@ export class MovieDetailComponent {
       progress_seconds: 0,
       finished: false,
     }
-    console.log(this.continueWatching, this.allreadyWatched)
-    this.apiService.postData(this.movieProgressEndpoint, data).subscribe()
+    this.apiService.postData(this.movieProgressEndpoint, data).subscribe();
   }
 
   /**

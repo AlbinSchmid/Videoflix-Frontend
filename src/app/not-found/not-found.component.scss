@@ -10,30 +10,29 @@ section {
 
 .content {
     @include flex-position($fd: column, $jc: center, $ai: center);
-    gap: 32px;
-    padding: 0 2rem;
+    gap: clamp(0.75rem, 0.5rem + 1.25vw, 2rem);
     text-align: center;
     margin-top: -20px;
 
     h1 {
-        @include font-style($fs: 84px, $fw: 700);
+        @include font-style($fs: clamp(3.75rem, 3.45rem + 1.5vw, 5.25rem), $fw: 700);
     }
 
     p {
-        @include font-style($fs: 28px);
+        @include font-style($fs: clamp(1.125rem, 1rem + 0.625vw, 1.75rem));
         max-width: 1000px;
     }
 
     a {
         margin-top: 10px;
-        @include font-style($fs: 24px);
-        padding: 30px;
+        @include font-style($fs: clamp(1.125rem, 1.05rem + 0.375vw, 1.5rem));
+        padding: clamp(1.5625rem, 1.5rem + 0.3125vw, 1.875rem);
     }
 
     .error-div {
         @include flex-position();
         gap: 10px;
-        margin-top: 50px;
+        margin-top: clamp(1.25rem, 0.875rem + 1.875vw, 3.125rem);
 
         div {
             background-color: red;
@@ -43,11 +42,13 @@ section {
         }
 
         p {
-            @include font-style($fs: 24px);
+            gap: 8px;
+            @include flex-position($jc: center, $ai: center);
+            @include font-style($fs: clamp(1.125rem, 1rem + 0.625vw, 1.75rem));
 
             mark {
                 background-color: transparent;
-                @include font-style($fs: 28px, $fw: 700);
+                @include font-style($fs: clamp(1.25rem, 1.15rem + 0.5vw, 1.75rem), $fw: 700);
             }
         }
     }

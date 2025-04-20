@@ -5,6 +5,7 @@ import { MovieDetailComponent } from '../movie-detail/movie-detail.component';
 import { EventEmitter } from '@angular/core';
 import { obj } from 'video.js/dist/types/utils/obj';
 import { MatIconModule } from '@angular/material/icon';
+import { WindowService } from '../../shared/services/window.service';
 
 @Component({
   selector: 'app-category',
@@ -17,6 +18,7 @@ import { MatIconModule } from '@angular/material/icon';
   host: { 'ngSkipHydration': '' }
 })
 export class CategoryComponent {
+  windowService = inject(WindowService);
   dialog = inject(MatDialog);
   el = inject(ElementRef);
   renderer = inject(Renderer2);
@@ -33,43 +35,82 @@ export class CategoryComponent {
 
   isAtStart: boolean = true;
   isAtEnd: boolean = false;
+  windowWidth: number = 0;
 
+
+  /**
+   * Lifecycle hook that is called after Angular has initialized the component.
+   * Sets the category name and subscribes to the `width$` observable from the
+   * `WindowService` to update the `windowWidth` property whenever the window width changes.
+   */
+  ngOnInit(): void {
+    this.setCategoryName();
+    this.windowService.width.subscribe(width => {
+      this.windowWidth = width;
+    });
+  }
+
+  /**
+   * Lifecycle hook that is called after the view has been fully initialized.
+   * Calls the `checkScrollPosition` method to set the initial scroll position state.
+   */
   ngAfterViewInit(): void {+
     this.checkScrollPosition();
   }
 
+  /**
+   * Checks the current scroll position of the movie container and updates
+   * the `isAtStart` and `isAtEnd` properties accordingly.
+   */
   checkScrollPosition(): void {
     const container = this.scrollContainer.nativeElement;
     const maxScrollLeft = container.scrollWidth - container.clientWidth;
-
     this.isAtStart = container.scrollLeft === 0;
     this.isAtEnd = container.scrollLeft >= maxScrollLeft;
   }
 
-
+  /**
+   * Scrolls the movie container in the specified direction ('left' or 'right').
+   * The scroll amount is calculated based on the container's width divided by
+   * the number of visible cards.
+   *
+   * @param direction - The direction to scroll, either 'left' or 'right'.
+   * 
+   * Behavior:
+   * - Smooth scrolling is applied for a better user experience.
+   * - After scrolling, a delay of 500ms is applied before checking the scroll position.
+   */
   scrollMovies(direction: 'left' | 'right') {
     const container = this.scrollContainer.nativeElement;
-    const scrollAmount = container.offsetWidth / 6;
-  
+    const scrollAmount = container.offsetWidth / this.checkAmountOfCards();
     if (direction === 'right') {
       container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     } else {
       container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
     }
-  
-    // Delay, damit das Scrollen abgeschlossen ist
-    setTimeout(() => this.checkScrollPosition(), 10);
+    setTimeout(() => this.checkScrollPosition(), 500);
   }
-
 
   /**
-   * Lifecycle hook that is called after Angular has initialized the component.
-   * This method is used to perform component initialization logic.
-   * Specifically, it sets the category name by invoking the `setCategoryName` method.
+   * Determines the number of cards to display based on the current window width.
+   *
+   * @returns {number} The number of cards to display:
+   * - 3 cards if the window width is less than 700 pixels.
+   * - 4 cards if the window width is between 700 and 999 pixels.
+   * - 5 cards if the window width is between 1000 and 1299 pixels.
+   * - 6 cards if the window width is 1300 pixels or greater.
    */
-  ngOnInit(): void {
-    this.setCategoryName();
+  checkAmountOfCards(): number {
+    if (this.windowWidth < 700) {
+      return 3;
+    } else if (this.windowWidth < 1000) {
+      return 4;
+    } else if (this.windowWidth < 1300) {
+      return 5;
+    }
+    return 6;
   }
+
 
   /**
    * Updates the `genre` property of the `category` object to a more user-friendly name

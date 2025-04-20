@@ -155,19 +155,19 @@ app-footer {
     background-image: linear-gradient(315deg, #000000DB 0%, #0026BC00 99%), linear-gradient(135deg, #240039FF 0%, #001E84FF 100%);
 
     h1 {
-        margin-top: 40px;
-        @include font-style($fs: 48px, $fw: 700);
+        margin-top: clamp(0.75rem, 0.4rem + 1.75vw, 2.5rem);
+        @include font-style($fs: clamp(2rem, 1.8rem + 1vw, 3rem), $fw: 700);
         text-align: start;
     }
 
     h2 {
-        margin-top: 40px;
-        @include font-style($fs: 28px, $fw: 700);
+        margin-top: clamp(1.25rem, 1rem + 1.25vw, 2.5rem);
+        @include font-style($fs: clamp(1.25rem, 1.15rem + 0.5vw, 1.75rem), $fw: 700);
     }
 
     address {
-        margin-top: 20px;
-        @include font-style($fs: 18px, $fw: 400);
+        margin-top: clamp(0.625rem, 0.5rem + 0.625vw, 1.25rem);
+        @include font-style($fs: clamp(0.875rem, 0.825rem + 0.25vw, 1.125rem), $fw: 400);
         text-decoration: none;
         font-style: normal;
 
@@ -177,8 +177,8 @@ app-footer {
     }
 
     p {
-        margin-top: 20px;
-        @include font-style($fs: 18px, $fw: 400);
+        margin-top: clamp(0.625rem, 0.5rem + 0.625vw, 1.25rem);
+        @include font-style($fs: clamp(0.875rem, 0.825rem + 0.25vw, 1.125rem), $fw: 400);
         text-decoration: none;
         text-align: start;
 
@@ -190,24 +190,25 @@ app-footer {
 
     ul {
         margin-top: 20px;
-        @include font-style($fs: 18px, $fw: 400);
+        @include font-style($fs: clamp(0.875rem, 0.825rem + 0.25vw, 1.125rem), $fw: 400);
         text-decoration: none;
         text-align: start;
 
         li {
             margin-top: 10px;
-            @include font-style($fs: 18px, $fw: 400);
+            @include font-style($fs: clamp(0.875rem, 0.825rem + 0.25vw, 1.125rem), $fw: 400);
             text-decoration: none;
             text-align: start;
         }
     }
 }
 
+
 .video-js .vjs-control-bar {
     display: flex !important;
     justify-content: space-between !important;
     align-items: center;
-    height: 200px !important;
+    height: 199px !important;
     padding: 0 !important;
     background-color: transparent !important;
     background-size: 100% 100%;
@@ -290,6 +291,23 @@ app-footer {
     object-fit: cover;
 }
 
+@media screen and (max-width: 800px) {
+    .video-js .vjs-control-bar {
+        height: 70px !important;
+        margin-top: 0px !important;
+    }
+
+    .video-js .vjs-control {
+        font-size: 20px !important;
+        width: 60px;
+        margin-top: -62px;
+    }
+
+    .video-js .vjs-progress-control {
+        margin-top: 0px !important;
+    }
+}
+
 
 @media screen and (max-width: 600px) {
     .app-error-message {
@@ -297,6 +315,16 @@ app-footer {
         height: auto !important;
         bottom: 0 !important;
         left: 0 !important;
+    }
+
+    .cdk-overlay-pane.mat-mdc-dialog-panel {
+        height: 100vh !important;
+        max-width: none !important;
+        max-height: none !important;
+    }
+
+    .mat-mdc-dialog-surface {
+        border-radius: 0px !important;
     }
 }
 
@@ -377,4 +405,3 @@ app-footer {
     font-weight: 900;
     src: url('../public/fonts/dm-sans-v15-latin-900.woff2') format('woff2');
 }
-

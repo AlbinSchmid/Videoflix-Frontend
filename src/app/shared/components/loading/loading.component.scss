@@ -9,7 +9,7 @@
 
     img {
         filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 1));
-        width: 280px;
+        width: clamp(10rem, 8.5rem + 7.5vw, 17.5rem);
     }
 }
 
@@ -34,8 +34,8 @@
 }
 
 .dot {
-    width: 16px;
-    height: 16px;
+    width: clamp(0.625rem, 0.55rem + 0.375vw, 1rem);
+    height: clamp(0.625rem, 0.55rem + 0.375vw, 1rem);
     margin: 0 16px;
     border-radius: 50%;
     animation: bounce 1.2s infinite ease-in-out both;
@@ -84,7 +84,7 @@
 }
 
 .popcorn-kernel {
-    font-size: 24px;
+    font-size: clamp(0.75rem, 0.6rem + 0.75vw, 1.5rem);
     margin: 0 4px;
     animation: pop 2s ease-in-out infinite;
 }

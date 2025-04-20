@@ -46,6 +46,7 @@ export class BrowseService {
       hls.loadSource(movie_url);
       hls.attachMedia(video);
       this.hlsMap.set(video, hls);
+      console.log('HLS supported and loaded:', movie_url);
     } else if (video.canPlayType && video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = movie_url;
     }

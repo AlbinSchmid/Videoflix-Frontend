@@ -13,7 +13,7 @@ header {
     }
 
     .btn {
-        @include font-style($fs: clamp(1rem, 0.975rem + 0.125vw, 1.125rem),$fw: 600);    
+        @include font-style($fs: clamp(1rem, 0.975rem + 0.125vw, 1.125rem), $fw: 600);    
         padding: clamp(1.25rem, 1.225rem + 0.125vw, 1.375rem);
         
         span {
@@ -29,7 +29,7 @@ header {
     }
 
     .arrow-back-icon {
-        @include font-style($fs: 48px);
+        @include font-style($fs: clamp(2rem, 1.8rem + 1vw, 3rem));
         width: 50px;
         height: 50px;
         cursor: pointer;

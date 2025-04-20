@@ -135,10 +135,12 @@ export class WatchMovieComponent {
    */
   setVideoJsPlayer(): void {
     this.player = videojs(this.movieRef.nativeElement, {
+      language: 'en',
       controls: true,
       autoplay: true,
+      responsive: true,
       muted: true,
-      fluid: true
+      fluid: true,
     }) as VideoJsPlayer;
   }
 

@@ -1,4 +1,4 @@
-import { Component, ElementRef, inject, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, inject, ViewChild } from '@angular/core';
 import { HeaderComponent } from '../shared/components/header/header.component';
 import { ApiService } from '../shared/services/api.service';
 import { MatButtonModule } from '@angular/material/button';
@@ -30,7 +30,8 @@ export class BrowseComponent {
   router = inject(Router);
   browseService = inject(BrowseService);
   apiService = inject(ApiService);
-  windowService = inject(WindowService)
+  windowService = inject(WindowService);
+  cdr = inject(ChangeDetectorRef);
   @ViewChild('backgroundMovie', { static: true }) backgroundMovieRef!: ElementRef<HTMLVideoElement>;
 
   movieSections: { genre: string; movies: any[] }[] = [];
@@ -41,8 +42,10 @@ export class BrowseComponent {
   player!: any;
 
   moviesEndpoint: string = 'movies/';
+  movieProgressEndpoint: string = 'movies/progress/';
   video: any = null;
   windowWidth: number = 0;
+
 
   /**
    * Lifecycle hook that is called after Angular has initialized the component.
@@ -55,7 +58,6 @@ export class BrowseComponent {
     });
   }
 
-  
   /**
    * Lifecycle hook that is called after Angular has fully initialized the component's view.
    * This method sets a timeout to perform two actions:
@@ -141,6 +143,11 @@ export class BrowseComponent {
   stopVideoAt30Seconds(): void {
     this.player = videojs(this.backgroundMovieRef.nativeElement) as any;
     this.player.volume(0.05);
+    this.player.ready(() => {
+      setTimeout(() => {
+        this.player.dimensions('100%', '100%');
+      }, 100);
+    });
     this.player.on('timeupdate', () => {
       if (this.player.currentTime() >= 30) {
         this.player.pause();
@@ -171,6 +178,7 @@ export class BrowseComponent {
         .filter(([genre, movies]) => (genre == 'continue_watching' || genre == 'watched') && movies.length > 0)
         .map(([genre, movies]) => ({ genre, movies }));
       this.getRandomMovie();
+      this.cdr.detectChanges();
     });
   }
 
@@ -193,6 +201,27 @@ export class BrowseComponent {
    * @returns {void}
    */
   navigateToWatchComponent(): void {
-    this.router.navigate(['/browse/watch', this.randomMovie.slug])
+    this.postMovieProgress();
+    this.router.navigate(['/browse/watch', this.randomMovie.slug]);
+  }
+
+  /**
+   * Sends the progress of the currently viewed movie to the server.
+   * 
+   * This method constructs a data object containing the movie's slug, 
+   * the progress in seconds (defaulting to 0), and a flag indicating 
+   * whether the movie has been finished (defaulting to false). 
+   * It then posts this data to the specified movie progress endpoint 
+   * using the `apiService`.
+   * 
+   * @returns {void} This method does not return a value.
+   */
+  postMovieProgress(): void {
+    let data = {
+      movie_slug: this.randomMovie.slug,
+      progress_seconds: 0,
+      finished: false,
+    }
+    this.apiService.postData(this.movieProgressEndpoint, data).subscribe();
   }
 }

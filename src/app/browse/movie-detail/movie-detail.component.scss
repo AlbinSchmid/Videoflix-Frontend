@@ -2,7 +2,8 @@
 
 .background {
     height: 800px;
-    width: 1000px;
+    width: clamp(35rem, 22.5rem + 33.3333vw, 62.5rem);
+    max-height: 98vh;
     background-color: #181818;
     position: relative;
 }
@@ -12,7 +13,7 @@
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
-    height: 500px;
+    height: clamp(15.625rem, 12.5rem + 15.625vw, 31.25rem);
     width: 100%;
 
     .overlay-div {
@@ -21,17 +22,12 @@
         top: 0;
         left: 0;
         width: 100%;
-        height: 100%;
+        height: 101%;
         z-index: 10;
-        padding: 32px 40px;
+        padding: 32px clamp(0.75rem, 0.1786rem + 2.8571vw, 1.25rem);
         background-size: 100% 100%;
         background-position: 0px 0px;
         background-image: linear-gradient(0deg, #181818FF 3%, #00000000 34%);
-
-        h2 {
-            @include font-style($fs: 40px, $fw: 700);
-            margin-bottom: 12px;
-        }
 
         .bottom-div {
             position: relative;
@@ -48,18 +44,22 @@
         }
 
         .close-icon {
+            @include flex-position();
+            @include font-style($fs: clamp(1rem, 0.85rem + 0.75vw, 1.75rem));
             background-color: black;
-            right: 20px;
-            top: 20px;
-            width: 35px;
-            height: 35px;
+            right: clamp(0.75rem, 0.1786rem + 2.8571vw, 1.25rem);
+            top: clamp(0.75rem, 0.1786rem + 2.8571vw, 1.25rem);
+            width: clamp(1.5625rem, 1.4375rem + 0.625vw, 2.1875rem);
+            height: clamp(1.5625rem, 1.4375rem + 0.625vw, 2.1875rem);
             opacity: 1;
         }
 
         .sound-icon {
+            @include flex-position();
+            @include font-style($fs: clamp(1.125rem, 1.05rem + 0.375vw, 1.5rem));
             right: 0;
-            width: 55px;
-            height: 55px;
+            width: clamp(2.5rem, 2.3125rem + 0.9375vw, 3.4375rem);
+            height: clamp(2.5rem, 2.3125rem + 0.9375vw, 3.4375rem);
             opacity: 0.5;
             transition: opacity 0.3s ease-in-out;
             border: 2px solid white;
@@ -79,12 +79,16 @@
     }
 }
 
+.movie-title {
+    @include font-style($fs: clamp(1.75rem, 1.6rem + 0.75vw, 2.5rem), $fw: 700);
+    margin-bottom: 12px;
+}
+
 button {
-    width: 160px;
-    height: 45px;
+    padding: clamp(1.25rem, 1.15rem + 0.5vw, 1.5625rem) clamp(1.875rem, 1.675rem + 1vw, 2.5rem);
 
     span {
-        @include font-style($fs: 24px);
+        @include font-style($fs: clamp(1rem, 0.975rem + 0.125vw, 1.125rem));
         @include flex-position();
         gap: 14px;
     }
@@ -98,21 +102,27 @@ button {
 
 .movie-details {
     @include flex-position($fd: column, $jc: flex-start, $ai: flex-start);
-    padding: 0 40px;
+    padding: 0 clamp(0.75rem, -1.25rem + 10vw, 2.5rem) 20px clamp(0.75rem, -1.25rem + 10vw, 2.5rem);
     margin-top: 20px;
-    gap: 20px;
+    gap: clamp(0.25rem, -0.8929rem + 5.7143vw, 1.25rem);
     width: 100%;
     background-color: #181818;
     color: white;
 
     .details {
         @include flex-position($jc: flex-start, $ai: center);
+        @include font-style($fs: clamp(0.875rem, 0.7321rem + 0.7143vw, 1rem), $fw: 400);
         gap: 12px;
+
+        mat-icon {
+            @include font-style($fs: clamp(1.125rem, 0.6964rem + 2.1429vw, 1.5rem));
+        }
     }
 
     .description {
-        @include font-style($fs: 16px, $fw: 400);
+        @include font-style($fs: clamp(0.875rem, 0.7321rem + 0.7143vw, 1rem), $fw: 400);
         text-align: start;
+        margin-top: 4px;
     }
 }
 
@@ -121,8 +131,9 @@ button {
     gap: 12px;
 
     p {
-        @include font-style($fs: 16px, $fw: 400);
+        @include font-style($fs: clamp(0.875rem, 0.7321rem + 0.7143vw, 1rem), $fw: 400);
         text-align: start;
+        word-break: break-all;
 
         mark {
             background-color: transparent;
@@ -182,4 +193,18 @@ button {
     100% {
         transform: translateY(100%);
     }
+}
+
+@media screen and (max-width: 600px) {
+    .background {
+        height: 100vh;
+        width: 100%;
+        background-color: #181818;
+        position: relative;
+    }
+
+    .movie-title {
+        margin: 0;
+    }
+
 }

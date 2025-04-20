@@ -1,7 +1,7 @@
 @use './../../../styles.scss' as *;
 
 h3 {
-    @include font-style($fs: 28px, $fw: 700);
+    @include font-style($fs: clamp(1.125rem, 1rem + 0.625vw, 1.75rem), $fw: 700);
     margin-left: clamp(0.5rem, -0.6rem + 5.5vw, 6rem);
 }
 
@@ -54,7 +54,7 @@ h3 {
 
 .movies-div {
     @include flex-position($jc: flex-start, $ai: center);
-    gap: 12px;
+    gap: clamp(0.375rem, -0.0536rem + 2.1429vw, 0.75rem);
     padding: 10px clamp(0.5rem, -0.6rem + 5.5vw, 6rem);
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
@@ -66,10 +66,8 @@ h3 {
         display: none;
     }
 
-    
-
     .movie-cover-div {
-        flex: 0 0 calc(100% / 6); // genau 4 Elemente sichtbar
+        flex: 0 0 calc(100% / 6); 
         scroll-snap-align: center;
         min-width: 0;
         border-radius: 6px;
@@ -90,4 +88,34 @@ h3 {
 
 .leave-transition {
     transition: transform 300ms ease-out;
+}
+
+@media screen and (max-width: 1500px) {
+        .movie-cover-div {
+            flex: 0 0 calc(100% / 5) !important;
+        }
+}
+
+@media screen and (max-width: 1000px) {
+        .movie-cover-div {
+            flex: 0 0 calc(100% / 4) !important;
+        }
+}
+
+@media screen and (max-width: 700px) {
+        .movie-cover-div {
+            flex: 0 0 calc(100% / 3) !important;
+        }
+}
+
+@media screen and (max-width: 600px) {
+    .movie-cover-div {
+        flex: 0 0 calc(100% / 4) !important;
+    }
+}
+
+@media screen and (max-width: 500px) {
+    .movie-cover-div {
+        flex: 0 0 calc(100% / 3) !important;
+    }
 }

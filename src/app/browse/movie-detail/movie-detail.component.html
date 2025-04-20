@@ -6,19 +6,21 @@
         <video class="background-video" #videoRef autoplay playsinline height="auto"></video>
         <div class="overlay-div">
             <mat-icon class="detail-icon close-icon" fontIcon="close" (click)="closeMovieDetail()"></mat-icon>
-            <h2>{{title }}</h2>
+            <h2 class="movie-title" *ngIf="windowWidth > 600">{{ title }}</h2>
             <div class="bottom-div">
-                <button mat-flat-button [ngStyle]="{'width.px': continueWatching ? '200' : '160'}" (click)="navigateToWatchComponent()"><span><mat-icon fontIcon="play_arrow"></mat-icon>{{ checkIfContinueToMovie() }}</span></button>
+                <button *ngIf="windowWidth > 600" mat-flat-button (click)="navigateToWatchComponent()"><span><mat-icon fontIcon="play_arrow"></mat-icon>{{ checkIfContinueToMovie() }}</span></button>
                 <mat-icon *ngIf="video" class="detail-icon sound-icon" fontIcon="{{video.muted ? 'volume_off' : 'volume_up'}}" (click)="toggleSoundOfMovie()"></mat-icon>
             </div>
         </div>
     </div>
     <div class="movie-details">
+        <h2 class="movie-title" *ngIf="windowWidth <= 600">{{ title }}</h2>
         <div class="details">
             <p>{{ releaseYear }}</p>
             <p>{{ movieDuration }}</p>
             <mat-icon fontIcon="hd"></mat-icon>
         </div>
+        <button *ngIf="windowWidth <= 600" mat-flat-button (click)="navigateToWatchComponent()"><span><mat-icon fontIcon="play_arrow"></mat-icon>{{ checkIfContinueToMovie() }}</span></button>
         <p class="description">{{description}}</p>
         <div class="license">
             <p *ngIf="author && authorUrl"><mark>Author: </mark><span>{{author}}</span> | <a href="{{authorUrl}}">{{authorUrl}}</a></p>
