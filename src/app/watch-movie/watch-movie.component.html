@@ -1,5 +1,6 @@
-<div class="video-js-container background-div">
-    <video #movie class="video-js vjs-default-skin" controls autoplay muted playsinline preload="auto" width="100%"
+<video class="video-ios" *ngIf="progressMovie?.movie?.hls_url && browseService.onIOS" controls #videoRefIOS autoplay playsinline [attr.src]="progressMovie.movie.hls_url"></video>
+<div class="video-js-container background-div" *ngIf="!browseService.onIOS">
+    <video #movie class="video-js vjs-default-skin" controls autoplay playsinline preload="auto" width="100%" 
         height="auto" lang="en"></video>
     <div #videoHeader class="video-header">
         <a (click)="safeProgress()" href="/browse"><mat-icon fontIcon="arrow_back"></mat-icon></a>

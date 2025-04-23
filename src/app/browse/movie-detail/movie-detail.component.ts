@@ -40,7 +40,7 @@ export class MovieDetailComponent {
   allreadyWatched: boolean = false;
   loading: boolean = true;
 
-  @ViewChild('videoRef', { static: true }) videoElementRef!: ElementRef<HTMLVideoElement>;
+  @ViewChild('videoRef', { static: false }) videoElementRef!: ElementRef<HTMLVideoElement>;
 
   video: HTMLVideoElement | undefined;
   player!: any;
@@ -75,7 +75,7 @@ export class MovieDetailComponent {
    */
   ngAfterViewInit(): void {
     setTimeout(() => {
-      this.getVideoElementAndMovieHlsUrl();
+      this.setVideoElement();
       this.loadMoviesProgress();
       this.setStringsFromData();
     });
@@ -140,29 +140,33 @@ export class MovieDetailComponent {
       const existFinished = response.some((item: any) => item.movie.id === movieDetailId && item.finished === true);
       existContinue ? this.continueWatching = true : this.continueWatching = false;
       existFinished ? this.allreadyWatched = true : this.allreadyWatched = false;
-      this.loading = false;
-    };
+    }
+    this.loading = false;
   }
 
   /**
-   * Retrieves the video element from the template and the HLS URL of the movie.
-   * It then loads the HLS stream and plays the video when it's ready.
-   * Additionally, it sets up an event listener to format the video's duration
-   * once the metadata is loaded.
+   * Sets the video element by accessing the native element reference.
+   * It checks if the platform is iOS and plays the video accordingly.
+   * If not on iOS, it sets up the HLS stream and initializes the player.
    *
    * @remarks
-   * This method uses the `browseService` to load the HLS stream and play it.
-   * The `videoElementRef` is used to access the video element in the DOM.
+   * This method is called after the view has been initialized to ensure that
+   * the video element is available in the DOM. It also calls `getMovieDurationFormat`
+   * to format the movie duration once the metadata is loaded.
    */
-  getVideoElementAndMovieHlsUrl(): void {
-    if (this.videoElementRef) {
+  setVideoElement(): void {
+    this.video = this.videoElementRef.nativeElement;
+    if (this.videoElementRef && this.browseService.onIOS) {
+      this.video.play();
+      this.getMovieDurationFormat();
+      if (this.video.currentTime >= 30) {
+        this.video.pause();
+      }
+    } else if (this.videoElementRef && !this.browseService.onIOS) {
       let movieHlsUrl = this.data.movie.hls_url;
-      this.video = this.videoElementRef.nativeElement;
       this.setPlayerAndResumeVolumeAndPauseAt30Sec();
       this.browseService.loadHlsAndPlayWhenReady(this.video, movieHlsUrl, false);
-      this.video.addEventListener('loadedmetadata', () => {
-        if (this.video) this.formatDuration(this.video.duration);
-      });
+      this.getMovieDurationFormat();
     }
   }
 
@@ -185,29 +189,24 @@ export class MovieDetailComponent {
   }
 
   /**
-   * Formats a duration given in seconds into a human-readable string
-   * representing hours and minutes.
-   *
-   * @param seconds - The duration in seconds to be formatted.
-   *                  Must be a non-negative integer.
+   * Formats the movie duration by listening to the 'loadedmetadata' event of the video element.
+   * It calculates the duration in hours and minutes and updates the `movieDuration` property.
    *
    * @remarks
-   * - If the duration is less than an hour, only the minutes will be included.
-   * - If the duration is one hour or more, the result will include both hours and minutes.
-   *
-   * @example
-   * ```typescript
-   * formatDuration(3600); // "1 Std. 0 min."
-   * formatDuration(4500); // "1 Std. 15 min."
-   * formatDuration(300);  // "5 min."
-   * ```
+   * This method is called when the video metadata is loaded to ensure that the duration is available.
    */
-  formatDuration(seconds: number): void {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const hStr = h > 0 ? `${h} Std. ` : '';
-    const mStr = `${m} min.`;
-    this.movieDuration = hStr + mStr;
+  getMovieDurationFormat(): void {
+    if (this.video) {
+      this.video.addEventListener('loadedmetadata', () => {
+        let seconds = 0;
+        if (this.video) seconds = this.video.duration;
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const hStr = h > 0 ? `${h} Std. ` : '';
+        const mStr = `${m} min.`;
+        this.movieDuration = hStr + mStr;
+      });
+    };
   }
 
   /**

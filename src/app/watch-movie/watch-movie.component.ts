@@ -37,12 +37,14 @@ export class WatchMovieComponent {
   cdr = inject(ChangeDetectorRef);
 
   @ViewChild('movie', { static: false }) movieRef!: ElementRef<HTMLVideoElement>;
-  @ViewChild('videoHeader', { static: true }) headerRef!: ElementRef<HTMLElement>;
+  @ViewChild('videoHeader', { static: false }) headerRef!: ElementRef<HTMLElement>;
+  @ViewChild('videoRefIOS', { static: false }) videoRefIOS!: ElementRef<HTMLElement>;
   
   player!: any;
   hls?: Hls;
 
   video: any = null;
+  videoIOS: any = null;
   movieEndpoint: string = 'movie/';
   moviesProgressEndpoint: string = 'movies/progress/';
   movieProgressEndpoint: string = 'movie/progress/';
@@ -72,7 +74,10 @@ export class WatchMovieComponent {
         const slug = this.router.snapshot.paramMap.get('slug');
         if (slug) this.sendGetRequest(slug);
       }
-      this.getVideoJsPLayerReady();
+      console.log('movieRef', this.movieRef);
+      if (this.movieRef) {
+        this.getVideoJsPLayerReady();
+      }
     });
   }
 
@@ -216,8 +221,14 @@ export class WatchMovieComponent {
         this.showNotFound = false;
         this.progressMovie = res;
         this.movieTitle = res.movie.title;
-        this.player.currentTime(res.progress_seconds);
-        this.getVideoElementAndMovieHlsUrl();
+        if (this.videoRefIOS) {
+          this.videoIOS = this.videoRefIOS.nativeElement;
+          this.videoIOS.currentTime = res.progress_seconds;
+        }
+        if (this.movieRef) {
+          this.player.currentTime(res.progress_seconds);
+          this.getVideoElementAndMovieHlsUrl();
+        }
       },
       (err) => {
         this.showLoading = false;
@@ -272,8 +283,8 @@ export class WatchMovieComponent {
    */
   setData(seconds: number, remainingTime: number): void {
     let data = {
-      progress_seconds: remainingTime < 150 ? 0 : seconds,
-      finished: remainingTime < 150 ? true : false,
+      progress_seconds: remainingTime < 5 ? 0 : seconds,
+      finished: remainingTime < 5 ? true : false,
     }
     this.sendPatchRequest(data, this.progressMovie.movie.slug);
   }

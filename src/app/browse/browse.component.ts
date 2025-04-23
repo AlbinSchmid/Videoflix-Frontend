@@ -116,7 +116,6 @@ export class BrowseComponent {
    * @example
    * // Assuming `movieSections` is populated with categories and movies:
    * this.getRandomMovie();
-   * console.log(this.randomMovie); // Logs a randomly selected movie object.
    */
   getRandomMovie(): void {
     if (this.movieSections.length != 0) {

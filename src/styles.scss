@@ -36,6 +36,27 @@ $color-blue: #2E3EDF;
     max-height: none !important;
 }
 
+::ng-deep .mat-mdc-dialog-container {
+    display: flex !important;
+    align-items: center !important;
+}
+
+::ng-deep .mat-mdc-dialog-inner-container {
+    height: 100%;
+}
+
+app-form {
+    @include flex-position();
+    width: 100%;
+}
+
+body {
+    padding-top: env(safe-area-inset-top);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
 html,
 body {
     height: 100%;
@@ -310,6 +331,11 @@ app-footer {
 
 
 @media screen and (max-width: 600px) {
+
+    .mat-mdc-dialog-inner-container {
+        height: 100dvh !important;
+    }
+
     .app-error-message {
         width: 100% !important;
         height: auto !important;

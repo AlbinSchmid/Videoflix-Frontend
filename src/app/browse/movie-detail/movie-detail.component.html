@@ -3,13 +3,17 @@
         <div class="loader header"></div>
     </div>
     <div class="movie-preview">
-        <video class="background-video" #videoRef autoplay playsinline height="auto"></video>
+        <video class="background-video" #videoRef autoplay playsinline [attr.src]="data.movie.hls_url"></video>
         <div class="overlay-div">
-            <mat-icon class="detail-icon close-icon" fontIcon="close" (click)="closeMovieDetail()"></mat-icon>
-            <h2 class="movie-title" *ngIf="windowWidth > 600">{{ title }}</h2>
-            <div class="bottom-div">
-                <button *ngIf="windowWidth > 600" mat-flat-button (click)="navigateToWatchComponent()"><span><mat-icon fontIcon="play_arrow"></mat-icon>{{ checkIfContinueToMovie() }}</span></button>
-                <mat-icon *ngIf="video" class="detail-icon sound-icon" fontIcon="{{video.muted ? 'volume_off' : 'volume_up'}}" (click)="toggleSoundOfMovie()"></mat-icon>
+            <div class="close-icon-div">
+                <mat-icon class="detail-icon close-icon" fontIcon="close" (click)="closeMovieDetail()"></mat-icon>
+            </div>
+            <div class="movie-preview-details">
+                <h2 class="movie-title" *ngIf="windowWidth > 600">{{ title }}</h2>
+                <div class="bottom-div">
+                    <button *ngIf="windowWidth > 600" mat-flat-button (click)="navigateToWatchComponent()"><span><mat-icon fontIcon="play_arrow"></mat-icon>{{ checkIfContinueToMovie() }}</span></button>
+                    <mat-icon class="detail-icon sound-icon" *ngIf="video" fontIcon="{{video.muted ? 'volume_off' : 'volume_up'}}" (click)="toggleSoundOfMovie()"></mat-icon>
+                </div>
             </div>
         </div>
     </div>

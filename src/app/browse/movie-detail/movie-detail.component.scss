@@ -1,11 +1,11 @@
 @use './../../../styles.scss' as *;
 
 .background {
+    position: relative;
     height: 800px;
     width: clamp(35rem, 22.5rem + 33.3333vw, 62.5rem);
     max-height: 98vh;
     background-color: #181818;
-    position: relative;
 }
 
 .movie-preview {
@@ -17,14 +17,14 @@
     width: 100%;
 
     .overlay-div {
-        @include flex-position($fd: column, $jc: flex-end, $ai: flex-start);
+        @include flex-position($fd: column, $jc: space-between, $ai: flex-start);
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 101%;
         z-index: 10;
-        padding: 32px clamp(0.75rem, 0.1786rem + 2.8571vw, 1.25rem);
+        padding: clamp(0.75rem, 0.5rem + 1.25vw, 2rem) clamp(0.75rem, 0.1786rem + 2.8571vw, 1.25rem);
         background-size: 100% 100%;
         background-position: 0px 0px;
         background-image: linear-gradient(0deg, #181818FF 3%, #00000000 34%);
@@ -38,21 +38,26 @@
         .detail-icon {
             @include flex-position();
             cursor: pointer;
-            position: absolute;
-            color: white;
             border-radius: 100%;
         }
 
-        .close-icon {
-            @include flex-position();
-            @include font-style($fs: clamp(1rem, 0.85rem + 0.75vw, 1.75rem));
-            background-color: black;
-            right: clamp(0.75rem, 0.1786rem + 2.8571vw, 1.25rem);
-            top: clamp(0.75rem, 0.1786rem + 2.8571vw, 1.25rem);
-            width: clamp(1.5625rem, 1.4375rem + 0.625vw, 2.1875rem);
-            height: clamp(1.5625rem, 1.4375rem + 0.625vw, 2.1875rem);
-            opacity: 1;
+        .close-icon-div {
+            @include flex-position($jc: flex-end);
+            width: 100%;
+
+            .close-icon {
+                @include flex-position();
+                @include font-style($fs: clamp(1rem, 0.85rem + 0.75vw, 1.75rem));
+                background-color: black;
+                right: clamp(0.75rem, 0.1786rem + 2.8571vw, 1.25rem);
+                top: clamp(0.75rem, 0.1786rem + 2.8571vw, 1.25rem);
+                width: clamp(1.5625rem, 1.4375rem + 0.625vw, 2.1875rem);
+                height: clamp(1.5625rem, 1.4375rem + 0.625vw, 2.1875rem);
+                opacity: 1;
+            }
         }
+
+
 
         .sound-icon {
             @include flex-position();
@@ -100,11 +105,15 @@ button {
     }
 }
 
+.movie-preview-details {
+    width: 100%;
+}
+
 .movie-details {
     @include flex-position($fd: column, $jc: flex-start, $ai: flex-start);
     padding: 0 clamp(0.75rem, -1.25rem + 10vw, 2.5rem) 20px clamp(0.75rem, -1.25rem + 10vw, 2.5rem);
-    margin-top: 20px;
     gap: clamp(0.25rem, -0.8929rem + 5.7143vw, 1.25rem);
+    margin-top: 10px;
     width: 100%;
     background-color: #181818;
     color: white;
@@ -185,6 +194,14 @@ button {
     animation: shimmer-vertical 1.5s infinite;
 }
 
+.video-ios {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    border: none;
+}
+
 @keyframes shimmer-vertical {
     0% {
         transform: translateY(-100%);
@@ -205,6 +222,10 @@ button {
 
     .movie-title {
         margin: 0;
+    }
+
+    .bottom-div {
+        justify-content: flex-end !important;
     }
 
 }

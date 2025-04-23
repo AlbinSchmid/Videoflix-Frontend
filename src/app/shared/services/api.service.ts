@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 export class ApiService {
   http = inject(HttpClient)
 
-  API_BASE_URL = 'http://localhost:8000/api/';
+  API_BASE_URL = 'http://192.168.68.51:8000/api/';
   authLoading = false;
 
   /**

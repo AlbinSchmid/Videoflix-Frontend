@@ -6,8 +6,3 @@ section {
     position: relative;
     overflow: hidden;
 }
-
-app-form {
-    @include flex-position();
-    width: 100%;
-}

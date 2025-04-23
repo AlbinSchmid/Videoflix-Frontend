@@ -9,6 +9,12 @@ import Hls from 'hls.js';
 export class BrowseService {
   hlsMap = new Map<HTMLVideoElement, Hls>();
   platformId = inject(PLATFORM_ID);
+  onIOS = false;
+
+  isIOS(): boolean {
+    const isMSStream = typeof (window as any).MSStream !== 'undefined';
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !isMSStream;
+  }
 
   /**
    * Loads an HLS stream and plays the video when ready.
@@ -46,7 +52,6 @@ export class BrowseService {
       hls.loadSource(movie_url);
       hls.attachMedia(video);
       this.hlsMap.set(video, hls);
-      console.log('HLS supported and loaded:', movie_url);
     } else if (video.canPlayType && video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = movie_url;
     }
