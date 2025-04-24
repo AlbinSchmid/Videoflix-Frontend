@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, inject, Input, Output, Renderer2, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, inject, Input, Output, Renderer2, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MovieDetailComponent } from '../movie-detail/movie-detail.component';
 import { EventEmitter } from '@angular/core';
@@ -22,6 +22,7 @@ export class CategoryComponent {
   dialog = inject(MatDialog);
   el = inject(ElementRef);
   renderer = inject(Renderer2);
+  cdr = inject(ChangeDetectorRef);
 
   @ViewChild('scrollContainer', { static: true }) scrollContainer!: ElementRef;
 
@@ -67,6 +68,7 @@ export class CategoryComponent {
     const maxScrollLeft = container.scrollWidth - container.clientWidth;
     this.isAtStart = container.scrollLeft === 0;
     this.isAtEnd = container.scrollLeft >= maxScrollLeft;
+    this.cdr.detectChanges();
   }
 
   /**

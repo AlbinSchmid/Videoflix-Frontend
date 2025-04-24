@@ -83,7 +83,7 @@
             </div>
             @if (repeatedPasswordSignup.value != passwordSignup.value && repeatedPasswordSignup.touched ||
             showError && !repeatedPasswordSignup.value || repeatedPasswordSignup.touched &&
-            !repeatedPasswordSignup.value) {
+            !repeatedPasswordSignup.value || showError) {
             <span *ngIf="repeatedPasswordSignup.value != passwordSignup.value || !repeatedPasswordSignup.value"
                 class="span-error"><mat-icon fontIcon="warning"></mat-icon>Passwords must match.</span>
             }

@@ -11,7 +11,7 @@
                 <h1>{{ randomMovie.title }}</h1>
                 <p>{{ randomMovie.description }}</p>
                 <button mat-flat-button (click)="navigateToWatchComponent()"><span><mat-icon
-                            fontIcon="play_arrow"></mat-icon>Play</span></button>
+                            fontIcon="play_arrow"></mat-icon>{{checkIfContinueToMovie()}}</span></button>
             </div>
             <div>
                 <mat-icon *ngIf="video" class="sound-icon" fontIcon="{{video.muted ? 'volume_off' : 'volume_up'}}"
@@ -23,7 +23,7 @@
             <h1>{{ randomMovie.title }}</h1>
             <p>{{ randomMovie.description }}</p>
             <button mat-flat-button (click)="navigateToWatchComponent()"><span><mat-icon
-                        fontIcon="play_arrow"></mat-icon>Play</span></button>
+                        fontIcon="play_arrow"></mat-icon>{{checkIfContinueToMovie()}}</span></button>
         </div>
     </div>
     @for (category of continueWatching; track $index) {

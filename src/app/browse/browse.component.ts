@@ -46,6 +46,9 @@ export class BrowseComponent {
   video: any = null;
   windowWidth: number = 0;
 
+  alreadyWatched: boolean = false;
+  continueWatchingBoolean: boolean = false;
+
 
   /**
    * Lifecycle hook that is called after Angular has initialized the component.
@@ -56,6 +59,43 @@ export class BrowseComponent {
     this.windowService.width.subscribe(width => {
       this.windowWidth = width;
     });
+  }
+
+  loadMoviesProgress(): void {
+    this.apiService.getData(this.movieProgressEndpoint).subscribe(
+      (response) => {
+        this.filterResponse(response);
+      }
+    )
+  }
+
+  /**
+ * Determines the appropriate action label based on the user's watching status.
+ *
+ * @returns {string} - Returns 'Continue' if the user has a partially watched movie,
+ *                     otherwise returns 'Play' for a new viewing session.
+ */
+  checkIfContinueToMovie(): string {
+    return this.continueWatchingBoolean ? 'Continue' : 'Play';
+  }
+
+  /**
+ * Filters the response data to check if the current movie is already watched or in progress.
+ * It updates the `continueWatching` and `allreadyWatched` flags based on the response data.
+ *
+ * @param response - The response data from the API call.
+ *                  It is expected to be an array of objects with properties `id` and `finished`.
+ *
+ * @returns {void} This method does not return a value.
+ */
+  filterResponse(response: any): void {
+    if (response) {
+      let movieDetailId = this.randomMovie.id
+      const existContinue = response.some((item: any) => item.movie.id === movieDetailId && item.finished === false);
+      const existFinished = response.some((item: any) => item.movie.id === movieDetailId && item.finished === true);
+      existContinue ? this.continueWatchingBoolean = true : this.continueWatchingBoolean = false;
+      existFinished ? this.alreadyWatched = true : this.alreadyWatched = false;
+    }
   }
 
   /**
@@ -177,6 +217,7 @@ export class BrowseComponent {
         .filter(([genre, movies]) => (genre == 'continue_watching' || genre == 'watched') && movies.length > 0)
         .map(([genre, movies]) => ({ genre, movies }));
       this.getRandomMovie();
+      this.loadMoviesProgress();
       this.cdr.detectChanges();
     });
   }
@@ -200,7 +241,7 @@ export class BrowseComponent {
    * @returns {void}
    */
   navigateToWatchComponent(): void {
-    this.postMovieProgress();
+    if (!this.continueWatching && !this.alreadyWatched) this.postMovieProgress();
     this.router.navigate(['/browse/watch', this.randomMovie.slug]);
   }
 

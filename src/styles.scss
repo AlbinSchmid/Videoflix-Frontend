@@ -60,6 +60,7 @@ body {
 html,
 body {
     height: 100%;
+    background-color: #000000;
 }
 
 * {
@@ -224,6 +225,12 @@ app-footer {
     }
 }
 
+
+:host ::ng-deep .video-js,
+:host ::ng-deep [id^="vjs_video_"] {
+  width: 100% !important;
+  height: 100% !important;
+}
 
 .video-js .vjs-control-bar {
     display: flex !important;

@@ -37,7 +37,7 @@ export class MovieDetailComponent {
   license: string = '';
   licenseUrl: string = '';
   continueWatching: boolean = false;
-  allreadyWatched: boolean = false;
+  alreadyWatched: boolean = false;
   loading: boolean = true;
 
   @ViewChild('videoRef', { static: false }) videoElementRef!: ElementRef<HTMLVideoElement>;
@@ -139,7 +139,7 @@ export class MovieDetailComponent {
       const existContinue = response.some((item: any) => item.movie.id === movieDetailId && item.finished === false);
       const existFinished = response.some((item: any) => item.movie.id === movieDetailId && item.finished === true);
       existContinue ? this.continueWatching = true : this.continueWatching = false;
-      existFinished ? this.allreadyWatched = true : this.allreadyWatched = false;
+      existFinished ? this.alreadyWatched = true : this.alreadyWatched = false;
     }
     this.loading = false;
   }
@@ -245,7 +245,7 @@ export class MovieDetailComponent {
    * @returns {void}
    */
   navigateToWatchComponent(): void {
-    if (!this.continueWatching && !this.allreadyWatched) this.postMovieProgress();
+    if (!this.continueWatching && !this.alreadyWatched) this.postMovieProgress();
     this.closeMovieDetail();
     this.router.navigate(['/browse/watch', this.data.movie.slug]);
   }

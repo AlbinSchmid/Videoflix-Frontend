@@ -1,7 +1,7 @@
 <div class="category-div">
     <h3>{{ firstLetterBig(category.genre)}}</h3>
     <div class="scroll-wrapper">
-        <button class="scroll-btn left" *ngIf="!isAtStart" (click)="scrollMovies('left')"><mat-icon fontIcon="chevron_left"></mat-icon></button>
+        <button class="scroll-btn left" *ngIf="!isAtStart && windowWidth > 600" (click)="scrollMovies('left')"><mat-icon fontIcon="chevron_left"></mat-icon></button>
         <div class="movies-div" #scrollContainer>
             @for (movie of category.movies; track $index) {
             <div (mousemove)="onMouseMove($event)" (click)="openMovieDetail(movie)" (mouseleave)="onMouseLeave($event)"
@@ -11,6 +11,6 @@
             </div>
             }
         </div>
-        <button class="scroll-btn right" (click)="scrollMovies('right')" *ngIf="!isAtEnd"><mat-icon fontIcon="chevron_right"></mat-icon></button>
+        <button class="scroll-btn right" (click)="scrollMovies('right')" *ngIf="!isAtEnd && windowWidth > 600"><mat-icon fontIcon="chevron_right"></mat-icon></button>
     </div>
 </div>

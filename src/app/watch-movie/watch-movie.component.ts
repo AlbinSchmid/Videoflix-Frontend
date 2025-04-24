@@ -1,11 +1,12 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { ChangeDetectorRef, Component, ElementRef, inject, Inject, PLATFORM_ID, ViewChild } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ChangeDetectorRef, Component, ElementRef, HostListener, inject, Inject, PLATFORM_ID, ViewChild } from '@angular/core';
+import { ActivatedRoute, NavigationStart, Router } from '@angular/router';
 import { ApiService } from '../shared/services/api.service';
 import { MatIconModule } from '@angular/material/icon';
 import { BrowseService } from '../shared/services/browse.service';
 import { NotFoundComponent } from "../not-found/not-found.component";
 import { LoadingComponent } from '../shared/components/loading/loading.component';
+import { filter } from 'rxjs/operators';
 import videojs, { VideoJsPlayer } from 'video.js';
 import Hls from 'hls.js';
 import 'videojs-thumbnails';
@@ -25,7 +26,7 @@ declare module 'video.js' {
     NotFoundComponent,
     NotFoundComponent,
     LoadingComponent,
-],
+  ],
   templateUrl: './watch-movie.component.html',
   styleUrl: './watch-movie.component.scss'
 })
@@ -33,18 +34,18 @@ export class WatchMovieComponent {
   browseService = inject(BrowseService);
   apiService = inject(ApiService);
   routerNavigation = inject(Router);
-  router = inject(ActivatedRoute);
+  activatedRouter = inject(ActivatedRoute);
+  router = inject(Router);
   cdr = inject(ChangeDetectorRef);
 
   @ViewChild('movie', { static: false }) movieRef!: ElementRef<HTMLVideoElement>;
   @ViewChild('videoHeader', { static: false }) headerRef!: ElementRef<HTMLElement>;
   @ViewChild('videoRefIOS', { static: false }) videoRefIOS!: ElementRef<HTMLElement>;
-  
+
   player!: any;
   hls?: Hls;
 
   video: any = null;
-  videoIOS: any = null;
   movieEndpoint: string = 'movie/';
   moviesProgressEndpoint: string = 'movies/progress/';
   movieProgressEndpoint: string = 'movie/progress/';
@@ -53,9 +54,25 @@ export class WatchMovieComponent {
   movieTitle: string = ''
   showNotFound: boolean = false;
   showLoading: boolean = true;
+  currentUrl = this.router.url
 
-
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) { }
+  
+  /**
+   * Constructs the WatchMovieComponent and initializes the router event subscription.
+   * 
+   * @param platformId - The platform identifier, injected to determine the current platform (e.g., browser or server).
+   * 
+   * The constructor sets up a subscription to the router's navigation events. It filters for `NavigationStart` events
+   * where the URL has changed from the current URL. When such an event occurs, it triggers the `safeProgress` method
+   * to handle any necessary actions before navigation.
+   */
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.router.events
+      .pipe(
+        filter((e): e is NavigationStart => e instanceof NavigationStart && e.url !== this.currentUrl)
+      )
+      .subscribe(e => this.safeProgress());
+  }
 
   /**
    * Lifecycle hook that is called after Angular has fully initialized the component's view.
@@ -71,53 +88,95 @@ export class WatchMovieComponent {
   ngAfterViewInit(): void {
     setTimeout(() => {
       if (isPlatformBrowser(this.platformId)) {
-        const slug = this.router.snapshot.paramMap.get('slug');
-        if (slug) this.sendGetRequest(slug);
-      }
-      console.log('movieRef', this.movieRef);
-      if (this.movieRef) {
-        this.getVideoJsPLayerReady();
+        const slug = this.activatedRouter.snapshot.paramMap.get('slug');
+        if (slug) this.sendGetRequestProgessMovie(slug);
       }
     });
   }
 
   /**
-   * Retrieves the video element and the movie's HLS (HTTP Live Streaming) URL,
-   * then initializes the video player with the specified settings and starts
-   * loading and playing the video.
-   *
-   * @remarks
-   * - Ensures the video element is obtained from the `movieRef` property.
-   * - Configures the player's volume and mute settings.
-   * - Delegates the loading and playback of the HLS stream to the `browseService`.
-   *
-   * @throws
-   * This method assumes that `this.movieRef` and `this.movie.hls_url` are defined.
-   * If `this.movieRef` is null or undefined, the method will not execute properly.
+ * Sends a GET request to retrieve movie progress and updates the component's state.
+ *
+ * @param slug - The unique identifier for the movie, used to construct the endpoint URL.
+ *
+ * This method performs the following actions:
+ * - Constructs the endpoint URL using the provided slug.
+ * - Sends a GET request to the API service to fetch movie progress data.
+ * - Updates the `progressMovie` property with the response data.
+ * - Sets the `movieTitle` property with the movie's title from the response.
+ * - Updates the player's current playback time using the progress in seconds from the response.
+ * - Calls `getVideoElementAndMovieHlsUrl` to handle further video setup.
+ *
+ * If an error occurs during the API request, it logs the error to the console.
+ */
+  sendGetRequestProgessMovie(slug: string): void {
+    const slugEndpoint = this.movieProgressEndpoint + slug + '/';
+    this.apiService.getData(slugEndpoint).subscribe(
+      (res) => {
+        this.handleTheResponse(res);
+      },
+      (err) => {
+        this.showLoading = false;
+        this.showNotFound = true;
+      }
+    )
+  }
+
+  /**
+   * Handles the response from the API request for movie progress.
+   * 
+   * @param res - The response object containing movie progress data.
+   * 
+   * This method updates the component's state by setting the `showLoading` and `showNotFound` flags,
+   * assigns the response data to `progressMovie`, and sets the `movieTitle` property.
+   * It also calls `checkWhichVideoElementToSet` to determine which video element to use for playback.
    */
-  getVideoElementAndMovieHlsUrl(): void {
+  handleTheResponse(res: any): void {
+    this.showLoading = false;
+    this.showNotFound = false;
+    this.progressMovie = res;
+    this.movieTitle = res.movie.title;
+    setTimeout(() => {
+      this.checkWhichVideoElementToSet();
+    });
+  }
+
+  /**
+   * Checks which video element to set based on the platform and initializes the video player accordingly.
+   * 
+   * If the platform is a browser, it sets up the Video.js player and loads the HLS stream.
+   * If the platform is iOS, it sets the current time of the video element to the progress seconds.
+   * 
+   * @returns void
+   */
+  checkWhichVideoElementToSet(): void {
     if (this.movieRef) {
-      this.player.muted(false);
-      this.player.volume(0.3);
       let movieHlsUrl = this.progressMovie.movie.hls_url;
       this.video = this.movieRef.nativeElement;
+      this.setVideoJsPLayer();
       setTimeout(() => {
         this.browseService.loadHlsAndPlayWhenReady(this.video, movieHlsUrl, false);
       });
+    } else if (this.videoRefIOS) {
+      this.video = this.videoRefIOS.nativeElement;
+      this.video.currentTime = this.progressMovie.progress_seconds;
     }
   }
 
   /**
-   * Initializes the Video.js player when the platform is a browser.
-   * This method sets up the Video.js player instance, configures it, and attaches
-   * event handlers for additional functionality such as modifying the header
-   * in the fullscreen container and changing the header's opacity based on user activity.
-   *
-   * @returns {void}
+   * Initializes the Video.js player and sets up event listeners for fullscreen and user activity.
+   * 
+   * This method checks if the platform is a browser, sets the video player, and configures the player settings.
+   * It also sets the current time of the video to the progress seconds and mutes the audio.
+   * 
+   * @returns void
    */
-  getVideoJsPLayerReady(): void {
+  setVideoJsPLayer(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.setVideoJsPlayer();
+      this.player.currentTime(this.progressMovie.progress_seconds);
+      this.player.muted(false);
+      this.player.volume(0.3);
       this.player = videojs(this.movieRef.nativeElement) as any;
       this.player.ready(() => {
         this.putHeaderOfVideoInFullscreenContainer();
@@ -199,45 +258,6 @@ export class WatchMovieComponent {
   }
 
   /**
-   * Sends a GET request to retrieve movie progress and updates the component's state.
-   *
-   * @param slug - The unique identifier for the movie, used to construct the endpoint URL.
-   *
-   * This method performs the following actions:
-   * - Constructs the endpoint URL using the provided slug.
-   * - Sends a GET request to the API service to fetch movie progress data.
-   * - Updates the `progressMovie` property with the response data.
-   * - Sets the `movieTitle` property with the movie's title from the response.
-   * - Updates the player's current playback time using the progress in seconds from the response.
-   * - Calls `getVideoElementAndMovieHlsUrl` to handle further video setup.
-   *
-   * If an error occurs during the API request, it logs the error to the console.
-   */
-  sendGetRequest(slug: string): void {
-    const slugEndpoint = this.movieProgressEndpoint + slug + '/';
-    this.apiService.getData(slugEndpoint).subscribe(
-      (res) => {
-        this.showLoading = false;
-        this.showNotFound = false;
-        this.progressMovie = res;
-        this.movieTitle = res.movie.title;
-        if (this.videoRefIOS) {
-          this.videoIOS = this.videoRefIOS.nativeElement;
-          this.videoIOS.currentTime = res.progress_seconds;
-        }
-        if (this.movieRef) {
-          this.player.currentTime(res.progress_seconds);
-          this.getVideoElementAndMovieHlsUrl();
-        }
-      },
-      (err) => {
-        this.showLoading = false;
-        this.showNotFound = true;
-      }
-    )
-  }
-
-  /**
    * Sends a PATCH request to update the movie progress for a specific slug.
    * 
    * @param data - The data to be sent in the PATCH request.
@@ -265,10 +285,10 @@ export class WatchMovieComponent {
    * converts the current time to seconds before passing the data to `setData`.
    */
   safeProgress(): void {
-    let duration = this.player.duration();
-    let currentTime = this.player.currentTime();
+    let duration = this.video.duration;
+    let currentTime = this.video.currentTime;
     let remainingTime = duration - currentTime;
-    const seconds = Math.floor(this.player.currentTime());
+    const seconds = Math.floor(currentTime);
     this.setData(seconds, remainingTime);
   }
 
@@ -298,5 +318,15 @@ export class WatchMovieComponent {
     if (this.player) {
       (this.player as any).dispose();
     }
+  }
+
+  /**
+   * Lifecycle hook that is called when the component is destroyed.
+   * Cleans up the HLS instance associated with the video element.
+   * This ensures that resources are properly released and prevents memory leaks.
+   */
+  @HostListener('window:beforeunload', ['$event'])
+  onBeforeUnload(event: BeforeUnloadEvent) {
+    this.safeProgress();
   }
 }
