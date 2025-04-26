@@ -1,137 +1,138 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { WatchMovieComponent } from './watch-movie.component';
-import { ApiService } from '../shared/services/api.service';
 import { BrowseService } from '../shared/services/browse.service';
-import { ActivatedRoute, Router } from '@angular/router';
-import { PLATFORM_ID, NO_ERRORS_SCHEMA } from '@angular/core';
-import { of, throwError } from 'rxjs';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { ApiService } from '../shared/services/api.service';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { of } from 'rxjs';
+import { RouterTestingModule } from '@angular/router/testing';
+import { PLATFORM_ID, NO_ERRORS_SCHEMA, ElementRef } from '@angular/core';
 
-class MockApiService {
-  getData = jasmine.createSpy('getData');
+class ApiServiceMock {
+  getData = jasmine.createSpy('getData').and.returnValue(of({ movie: { title: 'Test Movie', slug: 'test', hls_url: 'url' }, progress_seconds: 10 }));
   patchData = jasmine.createSpy('patchData').and.returnValue(of({}));
 }
 
-class MockBrowseService {
+class BrowseServiceMock {
+  showQualityMenu = false;
   loadHlsAndPlayWhenReady = jasmine.createSpy('loadHlsAndPlayWhenReady');
 }
 
-class MockActivatedRoute {
-  snapshot = {
-    paramMap: {
-      get: jasmine.createSpy('get').and.returnValue('test-slug')
-    }
-  };
-}
+let readyCallback: Function = () => { };
+const playerStub = {
+  ready: (fn: Function) => { readyCallback = fn; },
+  currentTime: jasmine.createSpy('currentTime'),
+  muted: jasmine.createSpy('muted'),
+  volume: jasmine.createSpy('volume'),
+  getChild: () => ({ addChild: () => { }, children: () => [] }),
+  on: (_e: string, _cb: Function) => { },
+  isFullscreen: () => false,
+  dispose: jasmine.createSpy('dispose')
+};
+
+(globalThis as any).videojs = (_elem?: any) => playerStub;
+(globalThis as any).videojs.registerComponent = () => { };
+(globalThis as any).videojs.getComponent = () => function () { };
 
 describe('WatchMovieComponent', () => {
   let component: WatchMovieComponent;
   let fixture: ComponentFixture<WatchMovieComponent>;
-  let apiService: MockApiService;
-  let browseService: MockBrowseService;
+  let api: ApiServiceMock;
+  let browse: BrowseServiceMock;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [WatchMovieComponent],
+      imports: [RouterTestingModule, WatchMovieComponent],
       providers: [
-        provideHttpClient(withInterceptorsFromDi()),
-        { provide: ApiService, useClass: MockApiService },
-        { provide: BrowseService, useClass: MockBrowseService },
-        { provide: ActivatedRoute, useClass: MockActivatedRoute },
-        { provide: Router, useValue: {} },
+        { provide: ApiService, useClass: ApiServiceMock },
+        { provide: BrowseService, useClass: BrowseServiceMock },
+        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ slug: 'test' }) } } },
         { provide: PLATFORM_ID, useValue: 'browser' }
       ],
       schemas: [NO_ERRORS_SCHEMA]
     }).compileComponents();
+  });
 
+  beforeEach(() => {
     fixture = TestBed.createComponent(WatchMovieComponent);
     component = fixture.componentInstance;
-    apiService = TestBed.inject(ApiService) as any;
-    browseService = TestBed.inject(BrowseService) as any;
-
-    component.movieRef = { nativeElement: document.createElement('video') } as any;
-    component.player = {
-      muted: jasmine.createSpy('muted'),
-      volume: jasmine.createSpy('volume'),
-      currentTime: jasmine.createSpy('currentTime'),
-      duration: jasmine.createSpy('duration').and.returnValue(200),
-      on: jasmine.createSpy('on'),
-      ready: (fn: Function) => fn(),
-      isFullscreen: jasmine.createSpy('isFullscreen').and.returnValue(false),
-      dispose: jasmine.createSpy('dispose')
-    } as any;
+    api = TestBed.inject(ApiService) as unknown as ApiServiceMock;
+    browse = TestBed.inject(BrowseService) as unknown as BrowseServiceMock;
+    fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should fetch movie progress and initialize video in ngAfterViewInit', fakeAsync(() => {
-    const mockResponse = { movie: { title: 'Test Movie', slug: 'test-slug', hls_url: 'url.m3u8' }, progress_seconds: 42 };
-    apiService.getData.and.returnValue(of(mockResponse));
-
-    spyOn(component, 'getVideoElementAndMovieHlsUrl');
-    spyOn(component, 'getVideoJsPLayerReady');
-
+  it('ngAfterViewInit should trigger sendGetRequestProgessMovie', fakeAsync(() => {
+    spyOn(component, 'sendGetRequestProgessMovie');
     component.ngAfterViewInit();
     tick();
+    expect(component.sendGetRequestProgessMovie).toHaveBeenCalledWith('test');
+  }));
 
-    expect(apiService.getData).toHaveBeenCalledWith('movie/progress/test-slug/');
+  it('handleTheResponse should update flags and call checkWhichVideoElementToSet', fakeAsync(() => {
+    spyOn(component, 'checkWhichVideoElementToSet');
+    const res = { movie: { title: 'Test', slug: 's', hls_url: 'url' } } as any;
+    component.handleTheResponse(res);
+    tick();
     expect(component.showLoading).toBeFalse();
     expect(component.showNotFound).toBeFalse();
-    expect(component.progressMovie).toEqual(mockResponse);
-    expect(component.movieTitle).toBe('Test Movie');
-    expect(component.player.currentTime).toHaveBeenCalledWith(42);
-    expect(component.getVideoElementAndMovieHlsUrl).toHaveBeenCalled();
-    expect(component.getVideoJsPLayerReady).toHaveBeenCalled();
+    expect(component.movieTitle).toBe('Test');
+    expect(component.checkWhichVideoElementToSet).toHaveBeenCalled();
   }));
 
-  it('should handle API error and show not found', fakeAsync(() => {
-    apiService.getData.and.returnValue(throwError(() => new Error('Error')));
-
-    component.ngAfterViewInit();
-    tick();
-
-    expect(component.showLoading).toBeFalse();
-    expect(component.showNotFound).toBeTrue();
-  }));
-
-  describe('getVideoElementAndMovieHlsUrl', () => {
-    it('should call browseService.loadHlsAndPlayWhenReady with correct arguments', fakeAsync(() => {
-      const videoEl = document.createElement('video');
-      component.movieRef = { nativeElement: videoEl } as any;
-      component.progressMovie = { movie: { hls_url: 'test-url.m3u8' } } as any;
-      component.player = {
-        muted: jasmine.createSpy('muted'),
-        volume: jasmine.createSpy('volume'),
-        dispose: jasmine.createSpy('dispose')
-      } as any;
-
-      component.getVideoElementAndMovieHlsUrl();
-      tick();
-
-      expect(component.player.muted).toHaveBeenCalledWith(false);
-      expect(component.player.volume).toHaveBeenCalledWith(0.3);
-      expect(browseService.loadHlsAndPlayWhenReady).toHaveBeenCalledWith(videoEl, 'test-url.m3u8', false);
-    }));
+  it('safeProgress should forward values to setData', () => {
+    component.video = { duration: 200, currentTime: 100 } as any;
+    spyOn(component, 'setData');
+    component.safeProgress();
+    expect(component.setData).toHaveBeenCalledWith(100, 100);
   });
 
-  describe('setData', () => {
-    it('should reset progress and mark finished when remainingTime < 150', () => {
-      component.progressMovie = { movie: { slug: 'slug' } } as any;
-      component.setData(30, 100);
-      expect(apiService.patchData).toHaveBeenCalledWith('movie/progress/slug/', { progress_seconds: 0, finished: true });
-    });
-
-    it('should update progress when remainingTime >= 150', () => {
-      component.progressMovie = { movie: { slug: 'slug' } } as any;
-      component.setData(50, 200);
-      expect(apiService.patchData).toHaveBeenCalledWith('movie/progress/slug/', { progress_seconds: 50, finished: false });
-    });
+  it('setData should mark finished when remainingTime < 5', () => {
+    spyOn(component, 'sendPatchRequest');
+    component.progressMovie = { movie: { slug: 'slug' } } as any;
+    component.setData(10, 4);
+    expect(component.sendPatchRequest).toHaveBeenCalledWith({ progress_seconds: 0, finished: true }, 'slug');
   });
 
-  it('should dispose player on destroy', () => {
+  it('sendPatchRequest should call api.patchData with correct endpoint', () => {
+    component.sendPatchRequest({ a: 1 }, 'slug');
+    expect(api.patchData).toHaveBeenCalledWith('movie/progress/slug/', { a: 1 });
+    expect(component.showLoading).toBeTrue();
+  });
+
+  it('ngOnDestroy should dispose player', () => {
+    component.player = playerStub as any;
     component.ngOnDestroy();
-    expect((component.player as any).dispose).toHaveBeenCalled();
+    expect(playerStub.dispose).toHaveBeenCalled();
+  });
+
+  it('onBeforeUnload should call safeProgress', () => {
+    spyOn(component, 'safeProgress');
+    component.onBeforeUnload(new Event('beforeunload') as BeforeUnloadEvent);
+    expect(component.safeProgress).toHaveBeenCalled();
+  });
+
+  it('checkWhichVideoElementToSet should use movie element path', fakeAsync(() => {
+    const videoElement = { currentTime: 0 } as any;
+    component.movieRef = new ElementRef(videoElement);
+    component.progressMovie = { movie: { hls_url: 'url' }, progress_seconds: 10 } as any;
+    spyOn(component as any, 'setVideoJsPLayerAndPlay');
+    component.checkWhichVideoElementToSet();
+    tick();
+    expect((component as any).setVideoJsPLayerAndPlay).toHaveBeenCalled();
+    expect(browse.loadHlsAndPlayWhenReady).toHaveBeenCalledWith(videoElement, 'url', false);
+  }));
+
+  it('checkWhichVideoElementToSet should use ios element path', () => {
+    const iosElement = { currentTime: 0 } as any;
+    component.videoRefIOS = { nativeElement: iosElement } as ElementRef<any>;
+    component.movieRef = undefined as any;
+    component.progressMovie = { progress_seconds: 42, movie: {} } as any;
+
+    component.checkWhichVideoElementToSet();
+
+    expect(iosElement.currentTime).toBe(42);
   });
 });

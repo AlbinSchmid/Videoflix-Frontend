@@ -11,10 +11,51 @@ import videojs, { VideoJsPlayer } from 'video.js';
 import Hls from 'hls.js';
 import 'videojs-thumbnails';
 
-
 declare module 'video.js' {
   interface VideoJsPlayer {
     thumbnails?: (options: Record<string, { src: string }>) => void;
+  }
+}
+
+const VjsButton = videojs.getComponent('Button') as any;
+
+export class QualityButton extends VjsButton {
+  private browseService!: BrowseService;
+
+  constructor(player: any, options: any) {
+    super(player, options);
+    this.browseService = options.browseService;
+    (this as any)['controlText']('Quality');
+  }
+
+  /**
+   * Creates a custom HTML button element with specific classes and an icon or text.
+   * This method overrides the `createEl` method from the parent class to add
+   * additional functionality for creating a button with a custom appearance.
+   *
+   * @returns {HTMLElement} The customized button element with the specified classes and icon/text.
+   */
+  createEl() {
+    const el = super.createEl('button', {
+      className: 'vjs-quality-button vjs-control vjs-button',
+    });
+
+    const icon = document.createElement('span');
+    icon.innerText = 'HD'; // <<< Hier Text oder Icon, was du willst!
+    icon.style.fontSize = '24px';
+    icon.style.color = 'white';
+
+    el.appendChild(icon);
+    return el;
+  }
+
+  /**
+   * Toggles the visibility of the quality menu in the browse service.
+   * When invoked, it switches the `showQualityMenu` property between
+   * `true` and `false`.
+   */
+  handleClick() {
+    this.browseService.showQualityMenu = !this.browseService.showQualityMenu;
   }
 }
 
@@ -41,6 +82,7 @@ export class WatchMovieComponent {
   @ViewChild('movie', { static: false }) movieRef!: ElementRef<HTMLVideoElement>;
   @ViewChild('videoHeader', { static: false }) headerRef!: ElementRef<HTMLElement>;
   @ViewChild('videoRefIOS', { static: false }) videoRefIOS!: ElementRef<HTMLElement>;
+  @ViewChild('qualityMenu', { static: false }) qualityMenuRef!: ElementRef<HTMLElement>;
 
   player!: any;
   hls?: Hls;
@@ -56,7 +98,7 @@ export class WatchMovieComponent {
   showLoading: boolean = true;
   currentUrl = this.router.url
 
-  
+
   /**
    * Constructs the WatchMovieComponent and initializes the router event subscription.
    * 
@@ -72,6 +114,18 @@ export class WatchMovieComponent {
         filter((e): e is NavigationStart => e instanceof NavigationStart && e.url !== this.currentUrl)
       )
       .subscribe(e => this.safeProgress());
+  }
+
+  /**
+   * Lifecycle hook that is called when the component is initialized.
+   * 
+   * This method registers the custom QualityButton component with Video.js
+   * if the platform is a browser.
+   */
+  ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      videojs.registerComponent('QualityButton', QualityButton as any);
+    }
   }
 
   /**
@@ -153,7 +207,7 @@ export class WatchMovieComponent {
     if (this.movieRef) {
       let movieHlsUrl = this.progressMovie.movie.hls_url;
       this.video = this.movieRef.nativeElement;
-      this.setVideoJsPLayer();
+      this.setVideoJsPLayerAndPlay();
       setTimeout(() => {
         this.browseService.loadHlsAndPlayWhenReady(this.video, movieHlsUrl, false);
       });
@@ -171,17 +225,20 @@ export class WatchMovieComponent {
    * 
    * @returns void
    */
-  setVideoJsPLayer(): void {
+  setVideoJsPLayerAndPlay(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.setVideoJsPlayer();
-      this.player.currentTime(this.progressMovie.progress_seconds);
-      this.player.muted(false);
-      this.player.volume(0.3);
       this.player = videojs(this.movieRef.nativeElement) as any;
       this.player.ready(() => {
-        this.putHeaderOfVideoInFullscreenContainer();
+        this.player.currentTime(this.progressMovie.progress_seconds);
+        this.player.muted(false);
+        this.player.volume(0.3);
+        this.player.getChild('controlBar').addChild('QualityButton', { browseService: this.browseService }, this.player.getChild('controlBar').children().length - 1);
+        const refArray = [this.headerRef, this.qualityMenuRef];
+        this.putHeaderAndQualityMenuInFullscreenContainer(refArray);
         this.changeHeaderOpacityOnUserActivity();
       });
+      this.browseService.video = this.player.tech().el() as HTMLVideoElement;
     }
   }
 
@@ -208,52 +265,69 @@ export class WatchMovieComponent {
     }) as VideoJsPlayer;
   }
 
+
   /**
-   * Moves the header element into the fullscreen container when the video player enters fullscreen mode,
-   * and restores it to the original container when exiting fullscreen mode.
-   *
-   * This method listens for the `fullscreenchange` event on the video player and dynamically appends
-   * the header element to the appropriate container based on the fullscreen state.
-   *
-   * @remarks
-   * - The header element is referenced using `this.headerRef.nativeElement`.
-   * - The fullscreen container is identified by the `.vjs-fullscreen` class.
-   * - The original container is identified by the `.video-js-container` class.
-   *
-   * @returns void
+   * Moves the header and quality menu elements into a fullscreen container when the video is in fullscreen mode.
+   * 
+   * @param refArray - An array of ElementRef objects representing the header and quality menu elements.
+   * 
+   * This method listens for the `fullscreenchange` event on the video player. When the event is triggered,
+   * it checks if the player is in fullscreen mode and moves the specified elements accordingly.
    */
-  putHeaderOfVideoInFullscreenContainer(): void {
+  putHeaderAndQualityMenuInFullscreenContainer(refArray: ElementRef[]): void {
     this.player.on('fullscreenchange', () => {
       const isFullscreen = this.player.isFullscreen();
-      const headerEl = this.headerRef.nativeElement;
-      if (isFullscreen) {
-        const fsContainer = document.querySelector('.vjs-fullscreen');
-        fsContainer?.appendChild(headerEl);
-      } else {
-        const container = document.querySelector('.video-js-container');
-        container?.appendChild(headerEl);
-      }
+      refArray.forEach((ref) => {
+        const element = ref.nativeElement;
+        this.putElementInFullscreenContainer(element, isFullscreen);
+      });
     });
   }
 
   /**
-   * Adjusts the opacity and pointer events of the header element based on user activity.
+   * Moves a specified HTML element into a fullscreen container or back to its original container.
+   *
+   * @param element - The HTML element to be moved.
+   * @param isFullscreen - A boolean indicating whether the element should be moved to the fullscreen container (`true`) 
+   * or back to the regular container (`false`).
+   */
+  putElementInFullscreenContainer(element: HTMLElement, isFullscreen: boolean): void {
+    if (isFullscreen) {
+      const fsContainer = document.querySelector('.vjs-fullscreen');
+      fsContainer?.appendChild(element);
+    } else {
+      const container = document.querySelector('.video-js-container');
+      container?.appendChild(element);
+    }
+  }
+
+
+  /**
+   * Adjusts the opacity and pointer events of the provided elements based on user activity.
    * 
-   * This method listens for `userinactive` and `useractive` events from the video player.
-   * When the user becomes inactive, the header's opacity is set to `0` and pointer events
-   * are disabled. When the user becomes active, the header's opacity is restored to `1`
-   * and pointer events are re-enabled.
+   * This method listens for `userinactive` and `useractive` events on the video player
+   * and modifies the style of each element in the provided `refArray` accordingly.
    * 
-   * @returns {void}
+   * - When the user is inactive:
+   *   - Sets the element's opacity to `0`.
+   *   - Disables pointer events by setting `pointerEvents` to `none`.
+   * - When the user is active:
+   *   - Restores the element's opacity to `1`.
+   *   - Enables pointer events by setting `pointerEvents` to `auto`.
+   * 
+   * @param refArray - An array of `ElementRef` objects representing the elements
+   *                   whose styles will be modified based on user activity.
    */
   changeHeaderOpacityOnUserActivity(): void {
+    const headerElement = this.headerRef.nativeElement;
     this.player.on('userinactive', () => {
-      this.headerRef.nativeElement.style.opacity = '0';
-      this.headerRef.nativeElement.style.pointerEvents = 'none';
+      headerElement.style.opacity = '0';
+      headerElement.style.pointerEvents = 'none';
+      this.browseService.showQualityMenu = false;
     });
     this.player.on('useractive', () => {
-      this.headerRef.nativeElement.style.opacity = '1';
-      this.headerRef.nativeElement.style.pointerEvents = 'auto';
+      headerElement.style.opacity = '1';
+      headerElement.style.pointerEvents = 'auto';
     });
   }
 

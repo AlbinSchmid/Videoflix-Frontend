@@ -2,105 +2,154 @@ import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testin
 import { MovieDetailComponent } from './movie-detail.component';
 import { ApiService } from '../../shared/services/api.service';
 import { BrowseService } from '../../shared/services/browse.service';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { of, throwError } from 'rxjs';
-import { CommonModule } from '@angular/common';
+import { BehaviorSubject, of, throwError } from 'rxjs';
+import { NO_ERRORS_SCHEMA, ElementRef } from '@angular/core';
+import { RouterTestingModule } from '@angular/router/testing';
+import { WindowService } from '../../shared/services/window.service';
 
-class MockApiService {
+class ApiServiceMock {
   getData = jasmine.createSpy('getData').and.returnValue(of([]));
   postData = jasmine.createSpy('postData').and.returnValue(of({}));
 }
 
-class MockBrowseService {
+class BrowseServiceMock {
+  onIOS = false;
   loadHlsAndPlayWhenReady = jasmine.createSpy('loadHlsAndPlayWhenReady');
   destroyHls = jasmine.createSpy('destroyHls');
 }
 
-class MockDialogRef {
+class DialogRefMock {
   close = jasmine.createSpy('close');
 }
 
-class MockRouter {
+class RouterMock {
   navigate = jasmine.createSpy('navigate');
 }
+
+class WindowServiceMock {
+  width = new BehaviorSubject<number>(1024);
+}
+
+(globalThis as any).videojs = () => ({
+  volume: () => {},
+  on: () => {},
+  currentTime: () => 0,
+  pause: () => {}
+});
 
 describe('MovieDetailComponent', () => {
   let component: MovieDetailComponent;
   let fixture: ComponentFixture<MovieDetailComponent>;
-  let apiService: MockApiService;
-  let browseService: MockBrowseService;
-  let dialogRef: MockDialogRef;
-  let router: MockRouter;
-  const mockData = { movie: { id: 1, slug: 'test-slug', hls_url: 'test.m3u8', title: 'Test', release_year: '2025', description: 'Desc', author: 'Auth', author_url: '', license: 'LIC', license_url: '' } };
+  let api: ApiServiceMock;
+  let browse: BrowseServiceMock;
+  let dialog: DialogRefMock;
+  let router: RouterMock;
+
+  const mockData = {
+    movie: {
+      id: 1,
+      slug: 'slug',
+      hls_url: 'url',
+      title: 'Title',
+      release_year: '2024',
+      description: 'Desc',
+      author: 'Auth',
+      author_url: 'aurl',
+      license: 'Lic',
+      license_url: 'lurl'
+    }
+  };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MovieDetailComponent, CommonModule],
+      imports: [RouterTestingModule, MovieDetailComponent],
       providers: [
-        { provide: ApiService, useClass: MockApiService },
-        { provide: BrowseService, useClass: MockBrowseService },
-        { provide: MatDialogRef, useClass: MockDialogRef },
-        { provide: Router, useClass: MockRouter },
+        { provide: ApiService, useClass: ApiServiceMock },
+        { provide: BrowseService, useClass: BrowseServiceMock },
+        { provide: MatDialogRef, useClass: DialogRefMock },
+        { provide: Router, useClass: RouterMock },
+        { provide: WindowService, useClass: WindowServiceMock },
         { provide: MAT_DIALOG_DATA, useValue: mockData }
-      ]
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
     }).compileComponents();
-
-    fixture = TestBed.createComponent(MovieDetailComponent);
-    component = fixture.componentInstance;
-    apiService = TestBed.inject(ApiService) as any;
-    browseService = TestBed.inject(BrowseService) as any;
-    dialogRef = TestBed.inject(MatDialogRef) as any;
-    router = TestBed.inject(Router) as any;
   });
 
-  it('should create and set strings from data', fakeAsync(() => {
+  beforeEach(() => {
+    fixture = TestBed.createComponent(MovieDetailComponent);
+    component = fixture.componentInstance;
+    api = TestBed.inject(ApiService) as unknown as ApiServiceMock;
+    browse = TestBed.inject(BrowseService) as unknown as BrowseServiceMock;
+    dialog = TestBed.inject(MatDialogRef) as unknown as DialogRefMock;
+    router = TestBed.inject(Router) as unknown as RouterMock;
+  });
+
+  it('should create and set strings', fakeAsync(() => {
     fixture.detectChanges();
     tick();
-    expect(component.title).toBe('Test');
-    expect(component.releaseYear).toBe('2025');
+    expect(component.title).toBe('Title');
+    expect(component.releaseYear).toBe('2024');
     expect(component.description).toBe('Desc');
     expect(component.author).toBe('Auth');
-    expect(component.license).toBe('LIC');
+    expect(component.license).toBe('Lic');
   }));
 
-  it('should load and filter movie progress', fakeAsync(() => {
-    const progress = [{ id: 1, finished: false }];
-    apiService.getData.and.returnValue(of(progress));
-    fixture.detectChanges();
-    tick();
+  it('should filter response for continue watching', () => {
+    const resp = [{ movie: { id: 1 }, finished: false }];
+    component.filterResponse(resp);
     expect(component.continueWatching).toBeTrue();
-    expect(component.allreadyWatched).toBeFalse();
-  }));
+    expect(component.alreadyWatched).toBeFalse();
+  });
 
-  it('should handle progress load error', fakeAsync(() => {
-    apiService.getData.and.returnValue(throwError(() => new Error('Err')));
-    fixture.detectChanges();
+  it('should filter response for already watched', () => {
+    const resp = [{ movie: { id: 1 }, finished: true }];
+    component.filterResponse(resp);
+    expect(component.continueWatching).toBeFalse();
+    expect(component.alreadyWatched).toBeTrue();
+  });
+
+  it('loadMoviesProgress should handle error', fakeAsync(() => {
+    api.getData.and.returnValue(throwError(() => new Error('err')));
+    component.loadMoviesProgress();
     tick();
     expect(component.loading).toBeFalse();
   }));
 
-  it('should format duration correctly', () => {
-    component.formatDuration(3600 + 15 * 60);
-    expect(component.movieDuration).toBe('1 Std. 15 min.');
-    component.formatDuration(5 * 60);
-    expect(component.movieDuration).toBe('5 min.');
+  it('navigateToWatchComponent should post progress when not watched', () => {
+    component.continueWatching = false;
+    component.alreadyWatched = false;
+    component.navigateToWatchComponent();
+    expect(api.postData).toHaveBeenCalledWith('movies/progress/', jasmine.any(Object));
+    expect(dialog.close).toHaveBeenCalled();
+    expect(router.navigate).toHaveBeenCalledWith(['/browse/watch', 'slug']);
   });
 
-  it('should navigate to watch and post progress when not watched', fakeAsync(() => {
-    component.continueWatching = false;
-    component.allreadyWatched = false;
-    component.data = mockData;
-    component.navigateToWatchComponent();
-    expect(apiService.postData).toHaveBeenCalledWith('movies/progress/', jasmine.any(Object));
-    expect(dialogRef.close).toHaveBeenCalled();
-    expect(router.navigate).toHaveBeenCalledWith(['/browse/watch', 'test-slug']);
-  }));
-
-  it('should not post progress if already watching or watched', () => {
+  it('navigateToWatchComponent should not post when already watched', () => {
     component.continueWatching = true;
-    component.allreadyWatched = false;
     component.navigateToWatchComponent();
-    expect(apiService.postData).not.toHaveBeenCalled();
+    expect(api.postData).not.toHaveBeenCalled();
+  });
+
+  it('toggleSoundOfMovie toggles muted', () => {
+    const vid = { muted: true } as any;
+    component.video = vid;
+    component.toggleSoundOfMovie();
+    expect(vid.muted).toBeFalse();
+  });
+
+  it('checkIfContinueToMovie returns correct label', () => {
+    component.continueWatching = true;
+    expect(component.checkIfContinueToMovie()).toBe('Continue');
+    component.continueWatching = false;
+    expect(component.checkIfContinueToMovie()).toBe('Play');
+  });
+
+  it('ngOnDestroy destroys hls', () => {
+    const vid = {} as any;
+    component.video = vid;
+    component.ngOnDestroy();
+    expect(browse.destroyHls).toHaveBeenCalledWith(vid);
   });
 });

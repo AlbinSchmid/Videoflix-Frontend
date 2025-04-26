@@ -241,7 +241,7 @@ export class BrowseComponent {
    * @returns {void}
    */
   navigateToWatchComponent(): void {
-    if (!this.continueWatching && !this.alreadyWatched) this.postMovieProgress();
+    if (!this.continueWatchingBoolean && !this.alreadyWatched) this.postMovieProgress();
     this.router.navigate(['/browse/watch', this.randomMovie.slug]);
   }
 

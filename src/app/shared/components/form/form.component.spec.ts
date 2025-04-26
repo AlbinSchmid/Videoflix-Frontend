@@ -6,9 +6,6 @@ import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { NgForm } from '@angular/forms';
 
-/**
- * Unit tests for the standalone FormComponent.
- */
 describe('FormComponent', () => {
   let component: FormComponent;
   let fixture: ComponentFixture<FormComponent>;
@@ -17,13 +14,11 @@ describe('FormComponent', () => {
   let routerSpy: jasmine.SpyObj<Router>;
 
   beforeEach(async () => {
-    // Mocks for services and router
     apiSpy = jasmine.createSpyObj('ApiService', ['postLoginOrLogouData', 'postData']);
     errorSpy = jasmine.createSpyObj('ErrorService', ['getSuccessOrErrorMessages']);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
     await TestBed.configureTestingModule({
-      // Since FormComponent is standalone, import it instead of declaring
       imports: [FormComponent],
       providers: [
         { provide: ApiService, useValue: apiSpy },

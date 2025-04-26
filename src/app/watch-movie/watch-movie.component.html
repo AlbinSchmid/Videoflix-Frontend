@@ -1,7 +1,13 @@
-<video class="video-ios" *ngIf="progressMovie?.movie?.hls_url && browseService.onIOS" controls #videoRefIOS autoplay playsinline [attr.src]="progressMovie.movie.hls_url"></video>
+<video class="video-ios" *ngIf="progressMovie?.movie?.hls_url && browseService.onIOS" controls #videoRefIOS autoplay
+    playsinline [attr.src]="progressMovie.movie.hls_url"></video>
 <div class="video-js-container background-div" *ngIf="!browseService.onIOS">
-    <video #movie class="video-js vjs-default-skin" controls autoplay playsinline preload="auto" width="100%" 
+    <video #movie class="video-js vjs-default-skin" controls autoplay playsinline preload="auto" width="100%"
         height="auto" lang="en"></video>
+    <div [ngStyle]="{'opacity':browseService.showQualityMenu ? 1 : 0}" #qualityMenu class="quality-menu">
+        <button *ngFor="let quality of browseService.availableQualities" [ngClass]="{'bg-blue': browseService.activeQuality == quality.levelIndex}" (click)="browseService.setQuality(quality.levelIndex)">
+            {{ quality.label }}
+        </button>
+    </div>
     <div #videoHeader class="video-header">
         <a (click)="safeProgress()" href="/browse"><mat-icon fontIcon="arrow_back"></mat-icon></a>
         <h3>{{ movieTitle }}</h3>

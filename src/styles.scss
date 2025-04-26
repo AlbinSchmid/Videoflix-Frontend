@@ -78,7 +78,6 @@ section {
 
 header,
 footer {
-    max-width: 1920px;
     width: 100%;
 }
 
@@ -319,6 +318,10 @@ app-footer {
     object-fit: cover;
 }
 
+.vjs-quality-button {
+    margin-top: 105px !important;
+}
+
 @media screen and (max-width: 800px) {
     .video-js .vjs-control-bar {
         height: 70px !important;
@@ -333,6 +336,10 @@ app-footer {
 
     .video-js .vjs-progress-control {
         margin-top: 0px !important;
+    }
+
+    .vjs-quality-button {
+        margin-top: -26px !important;
     }
 }
 

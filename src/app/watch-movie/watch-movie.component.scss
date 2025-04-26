@@ -92,3 +92,33 @@ app-not-found {
         }
     }
 }
+
+.quality-menu {
+    @include flex-position($jc: center, $ai: center, $fd: column);
+    position: absolute;
+    bottom: 60px;
+    right: 50px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 6px;
+    border-radius: 8px;
+    z-index: 999;
+
+    button {
+        border-radius: 8px;
+        background: transparent;
+        color: white;
+        border: none;
+        padding: 5px 16px;
+        text-align: left;
+        font-size: 16px;
+        cursor: pointer;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    }
+}
+
+.bg-blue {
+    background: $color-blue !important;
+}

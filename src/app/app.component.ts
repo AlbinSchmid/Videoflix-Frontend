@@ -31,6 +31,6 @@ export class AppComponent {
    * @see https://angular.io/api/core/OnInit
    */
   ngOnInit(): void {
-    this.browseService.onIOS = this.browseService.isIOS();
+    // this.browseService.onIOS = this.browseService.isIOS();
   }
 }
