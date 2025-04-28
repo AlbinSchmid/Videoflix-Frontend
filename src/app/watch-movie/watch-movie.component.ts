@@ -41,9 +41,10 @@ export class QualityButton extends VjsButton {
     });
 
     const icon = document.createElement('span');
-    icon.innerText = 'HD'; // <<< Hier Text oder Icon, was du willst!
+    icon.innerText = 'HD';
     icon.style.fontSize = '24px';
     icon.style.color = 'white';
+    el.style.cursor = 'pointer';
 
     el.appendChild(icon);
     return el;

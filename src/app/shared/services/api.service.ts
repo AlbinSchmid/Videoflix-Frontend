@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 export class ApiService {
   http = inject(HttpClient)
 
-  API_BASE_URL = 'https://api.videoflix.albin-schmid/api/';
+  API_BASE_URL = 'https://api.videoflix.albin-schmid.com/api/';
   authLoading = false;
 
   /**
